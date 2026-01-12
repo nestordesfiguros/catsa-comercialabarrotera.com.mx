@@ -1,0 +1,35 @@
+ <IfModule mod_suphp.c>
+  <Files php.ini>
+   Order Deny, Allow 
+   Deny from all   	
+  </Files>
+ </IfModule>
+
+<IfModule mod_rewrite.c>
+  Options -Indexes
+  Options +SymLinksIfOwnerMatch
+  RewriteEngine on
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP_HOST} !^www\..+$ [NC]
+  RewriteRule ^ https://www.%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+ #CARGAR QUINTO NIVEL
+ #RewriteCond %{REQUEST_URI} ^/([A-Za-z0-9-]+)/([A-Za-z0-9-]+)/([A-Za-z0-9-]+)
+ RewriteRule ^([A-Za-z0-9-]+)/([A-Za-z0-9-]+)/([A-Za-z0-9-]+)/([A-Za-z0-9-]+)/([A-Za-z0-9-]+)$ index.php?nav=$1&cat=$2&subcat=$3&pagina=$4&subpagina=$5 [NC,L] 
+
+ #CARGAR CUARTO NIVEL
+ #RewriteCond %{REQUEST_URI} ^/([A-Za-z0-9-]+)/([A-Za-z0-9-]+)/([A-Za-z0-9-]+)
+ RewriteRule ^([A-Za-z0-9-]+)/([A-Za-z0-9-]+)/([A-Za-z0-9-]+)/([A-Za-z0-9-]+)$  index.php?nav=$1&cat=$2&subcat=$3&pagina=$4 [NC,L] 
+
+  #CARGAR TERCER NIVEL
+  #RewriteCond %{REQUEST_URI} ^/([A-Za-z0-9-]+)/([A-Za-z0-9-]+)/([A-Za-z0-9-]+)
+  RewriteRule ^([A-Za-z0-9-]+)/([A-Za-z0-9-]+)/([A-Za-z0-9-]+)$ index.php?nav=$1&cat=$2&subcat=$3 [NC,L]
+
+  #CARGAR SEGUNDO NIVEL
+  #RewriteCond %{REQUEST_URI} ^/([A-Za-z0-9-]+)/([A-Za-z0-9-]+)
+  RewriteRule ^([A-Za-z0-9-]+)/([A-Za-z0-9-]+)$ index.php?nav=$1&cat=$2 [NC,L]
+
+  #CARGAR PRIMER NIVEL
+  RewriteRule ^([A-Za-z0-9-]+)$ index.php?nav=$1 [NC,L]
+
+</IfModule>

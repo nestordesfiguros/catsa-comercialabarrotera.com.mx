@@ -1,0 +1,76 @@
+body{
+    background: white !important;
+}
+
+.mayusculas{
+    text-transform: uppercase;
+}
+.minusculas{
+    text-transform: lowercase;
+}
+
+.error{
+    color: red;
+}
+
+input.error{
+    border: 1px solid red;
+}
+
+input.largerCheckbox {
+    width: 20px;
+    height: 20px;
+}
+
+.dropzone{
+    border-style:dashed;
+    border-color: grey;  
+    background-color:#E3EBF7;         
+    border-radius: 20px;   
+    height: 100%;
+}
+.borde-img{
+    
+    border-color: grey;  
+    background-color:whitesmoke;         
+    border-radius: 20px;   
+    height: 100%;
+} 
+
+table.dataTable thead tr {
+    background-color: #E3EBF7!important;
+}    
+    
+.bootstrap-tagsinput .tag {
+    margin-right: 2px;
+    color: #666666 !important;
+    background-color: #E3EBF7 !important;
+    padding: 0.2rem 0.5rem 0.2rem 0.5rem; /* up  start down end */
+    border-radius: 5px;
+    margin-top: 15px !important;
+    margin-bottom: 15px !important;
+    width: 100% !important;
+}
+.correosinput{
+    background-color: #E3EBF7 !important;
+    padding: 0.2rem 0.5rem 0.2rem 0.5rem; /* up  start down end */
+    border:#CCCCCC solid 1px;
+    border-radius: 5px;
+}
+.bootstrap-tagsinput {
+    width: 100% !important;
+}
+.flechaRetrocede{
+    cursor: pointer;
+    color: #666666;
+}
+.flechaRetrocede:hover{
+    color:#CCCCCC;
+}
+.flechaAvanza{
+    cursor: pointer;
+    color: #666666;
+}
+.flechaAvanza:hover{
+    color:#CCCCCC;
+}

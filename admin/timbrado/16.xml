@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<cfdi:Comprobante Version='4.0' Serie='A' Folio='16' Fecha='2025-05-17 00:00:00' SubTotal='' Total='' Moneda='MXN' TipoDeComprobante='' LugarExpedicion='' xmlns:cfdi='http://www.sat.gob.mx/cfd/4'>
+<cfdi:Emisor Rfc='LCES571227ME9' Nombre='DISTRIBUIDORA DEL BAJÍO, S.A. DE C.V.' RegimenFiscal='601'/>
+<cfdi:Receptor Rfc='XAXX010101000' Nombre='Cliente de prueba' UsoCFDI='G03'/>
+<cfdi:Conceptos>
+<cfdi:Concepto ClaveProdServ='01010101' Cantidad='1.00' ClaveUnidad='H87' Unidad='Pieza' Descripcion='' ValorUnitario='550.00' Importe=''/>
+</cfdi:Conceptos>
+</cfdi:Comprobante>

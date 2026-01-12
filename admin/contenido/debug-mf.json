@@ -1,0 +1,12 @@
+{
+    "csd_dir": "C:\\wamp64\\www\\distribuidora-del-bajio\\admin\\ajax\\timbrado\\csd",
+    "usando": {
+        "tipo": "TXT base64",
+        "cer": "C:\\wamp64\\www\\distribuidora-del-bajio\\admin\\ajax\\timbrado\\csd\\Base64delCer.txt",
+        "key": "C:\\wamp64\\www\\distribuidora-del-bajio\\admin\\ajax\\timbrado\\csd\\Base64delKey.txt"
+    },
+    "len_cer_b64": 1948,
+    "len_key_b64": 1732,
+    "cer_ini": "MIIFsDCCA5igAwIBAgIUMzAwMDEwMDAw",
+    "key_ini": "MIIFDjBABgkqhkiG9w0BBQ0wMzAbBgkq"
+}

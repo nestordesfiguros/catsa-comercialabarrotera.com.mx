@@ -1,0 +1,154 @@
+body{
+    background: white !important;
+    font-size: 12px;
+}
+*{
+    font-size: 12px; 
+}
+.mayusculas{
+    text-transform: uppercase;
+}
+.minusculas{
+    text-transform: lowercase;
+}
+
+.error{
+    color: red;
+}
+
+input.error{
+    border: 1px solid red;
+}
+
+input.largerCheckbox {
+    width: 20px;
+    height: 20px;
+}
+
+.dropzone{
+    border-style:dashed;
+    border-color: grey;  
+    background-color:#E3EBF7;         
+    border-radius: 20px;   
+    height: 100%;
+}
+.borde-img{
+    
+    border-color: grey;  
+    background-color:whitesmoke;         
+    border-radius: 20px;   
+    height: 100%;
+} 
+
+table.dataTable thead tr {
+    background-color: #E3EBF7!important;
+}    
+    
+.bootstrap-tagsinput .tag {
+    margin-right: 2px;
+    color: #666666 !important;
+    background-color: #E3EBF7 !important;
+    padding: 0.2rem 0.5rem 0.2rem 0.5rem; /* up  start down end */
+    border-radius: 5px;
+    margin-top: 15px !important;
+    margin-bottom: 15px !important;
+    width: 100% !important;
+}
+.correosinput{
+    background-color: #E3EBF7 !important;
+    padding: 0.2rem 0.5rem 0.2rem 0.5rem; /* up  start down end */
+    border:#CCCCCC solid 1px;
+    border-radius: 5px;
+}
+.bootstrap-tagsinput {
+    width: 100% !important;
+}
+
+/* Botones Secundarios*/
+.btn-fixed {
+    width: 150px;
+    font-size: 10px !important;
+  }
+.btn{
+    font-size: 10px !important;
+}
+.f-small{    
+    font-size: 10px;
+}  
+
+select{
+    font-size: 12px !important;
+}
+
+.cantidad {
+    height: 30px;
+    font-size: 12px;
+}
+
+.precio_venta {
+    text-align: right !important;      /* Alinea el texto a la derecha */
+    padding-right: 10px;    /* Ajusta el espaciado a la derecha */
+}
+
+
+#tablaProductos td, #tablaProductos th {
+    padding: 5px 10px; /* Ajusta estos valores según sea necesario */
+    
+}
+
+/* Cambiar el tamaño de la fuente en toda la tabla */
+table.dataTable {
+    font-size: 12px; /* Cambia el tamaño de la fuente  */
+}
+
+/* Cambiar el tamaño de la fuente en los encabezados */
+table.dataTable thead th {
+    font-size: 12px; /* Cambia el tamaño de la fuente a 18px en los encabezados */
+}
+
+/* Cambiar el tamaño de la fuente en las celdas de datos */
+table.dataTable tbody td {
+    font-size: 12px; /* Cambia el tamaño de la fuente a 14px en las celdas */
+}
+
+/* Cambiar el tamaño de la fuente en el campo de búsqueda */
+.dataTables_filter input {
+    font-size: 12px;
+}
+
+/* Cambiar el tamaño de la fuente en el selector de longitud de página */
+.dataTables_length select {
+    font-size: 12px;
+}
+
+/* Cambiar el tamaño de la fuente en los botones de paginación */
+.dataTables_paginate a {
+    font-size: 12px;
+}
+
+/* Cambiar el tamaño de la fuente en la información de la tabla */
+.dataTables_info {
+    font-size: 12px;
+}
+
+/* Cambiar el tamaño de la fuente del texto 'Mostrar' */
+.dataTables_length label {
+    font-size: 12px;  /* Cambia el tamaño de la fuente en el texto "Mostrar" */
+}
+
+/* Cambiar el tamaño de la fuente en el selector de longitud de página */
+.dataTables_length select {
+    font-size: 12px;  /* Cambia el tamaño de la fuente en el selector */
+}
+
+/* Cambiar el tamaño de la fuente en el texto 'Buscar' */
+.dataTables_filter label {
+    font-size: 12px;  /* Cambiar el tamaño del texto 'Buscar' */
+}
+
+/* Cambiar el tamaño del ícono de búsqueda (si usas FontAwesome, por ejemplo) */
+.dataTables_filter i {
+    font-size: 12px;  /* Cambiar el tamaño del ícono de búsqueda */
+}
+
+

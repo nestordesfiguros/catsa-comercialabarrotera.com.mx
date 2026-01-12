@@ -1,0 +1,144 @@
+== ABONO INICIADO ==
+Abono: 1310 | Fecha: 2025-07-17 | ID Usuario: 1
+Abono guardado correctamente
+Saldo actualizado
+Intento de marcar como Pagada
+Consulta CxC ejecutada
+CxC válida: Remision=2 | Vendedor=6 | Fecha=2025-07-16
+Comisión creada: ID=1
+Comisión detalle insertada: INSERT INTO comisiones_detalle
+                    (id_comision, id_cxc, id_remision, monto_venta, porcentaje, total_comision)
+                    VALUES (1, 2, 2, 1310, 1, 13.1)
+== ABONO INICIADO ==
+Abono: 410 | Fecha: 2025-07-17 | ID Usuario: 1
+Abono guardado correctamente
+Saldo actualizado
+Intento de marcar como Pagada
+Consulta CxC ejecutada
+CxC válida: Remision=1 | Vendedor=6 | Fecha=2025-07-16
+Comisión creada: ID=1
+Comisión detalle insertada: INSERT INTO comisiones_detalle
+                    (id_comision, id_cxc, id_remision, monto_venta, porcentaje, total_comision)
+                    VALUES (1, 1, 1, 410, 1, 4.1)
+== ABONO INICIADO ==
+Abono: 298 | Fecha: 2025-07-17 | ID Usuario: 1
+Abono guardado correctamente
+Saldo actualizado
+Intento de marcar como Pagada
+Consulta CxC ejecutada
+CxC válida: Remision=2 | Vendedor=2 | Fecha=2025-07-16
+Comisión creada: ID=1
+Comisión detalle insertada: INSERT INTO comisiones_detalle
+                    (id_comision, id_cxc, id_remision, monto_venta, porcentaje, total_comision)
+                    VALUES (1, 2, 2, 298, 2, 5.96)
+== ABONO INICIADO ==
+Abono: 260 | Fecha: 2025-07-17 | ID Usuario: 1
+Abono guardado correctamente
+Saldo actualizado
+Intento de marcar como Pagada
+Consulta CxC ejecutada
+CxC válida: Remision=1 | Vendedor=2 | Fecha=2025-07-16
+Comisión ya existía: ID=1
+Comisión detalle insertada: INSERT INTO comisiones_detalle
+                    (id_comision, id_cxc, id_remision, monto_venta, porcentaje, total_comision)
+                    VALUES (1, 1, 1, 260, 2, 5.2)
+== ABONO INICIADO ==
+Abono: 410 | Fecha: 2025-07-17 | ID Usuario: 1
+Abono guardado correctamente
+Saldo actualizado
+Intento de marcar como Pagada
+Consulta CxC ejecutada
+CxC válida: Remision=1 | Vendedor=6 | Fecha=2025-07-16
+Comisión creada: ID=1
+Comisión detalle insertada: INSERT INTO comisiones_detalle
+                    (id_comision, id_cxc, id_remision, monto_venta, porcentaje, total_comision)
+                    VALUES (1, 1, 1, 410, 1, 4.1)
+== ABONO INICIADO ==
+Abono: 1310 | Fecha: 2025-07-17 | ID Usuario: 1
+Abono guardado correctamente
+Saldo actualizado
+Intento de marcar como Pagada
+Consulta CxC ejecutada
+CxC válida: Remision=2 | Vendedor=6 | Fecha=2025-07-16
+Comisión ya existía: ID=1
+Comisión detalle insertada: INSERT INTO comisiones_detalle
+                    (id_comision, id_cxc, id_remision, monto_venta, porcentaje, total_comision)
+                    VALUES (1, 2, 2, 1310, 1, 13.1)
+== ABONO INICIADO ==
+Abono: 298 | Fecha: 2025-07-18 | ID Usuario: 1
+Abono guardado correctamente
+Saldo actualizado
+Intento de marcar como Pagada
+Consulta CxC ejecutada
+CxC válida: Remision=4 | Vendedor=2 | Fecha=2025-07-16
+Comisión creada: ID=2
+Comisión detalle insertada: INSERT INTO comisiones_detalle
+                    (id_comision, id_cxc, id_remision, monto_venta, porcentaje, total_comision)
+                    VALUES (2, 4, 4, 298, 2, 5.96)
+== ABONO INICIADO ==
+Abono: 0 | Fecha: 2025-07-24 | ID Usuario: 1
+Abono inválido
+== ABONO INICIADO ==
+Abono: 0 | Fecha: 2025-07-24 | ID Usuario: 1
+Abono inválido
+== ABONO INICIADO ==
+Abono: 0 | Fecha: 2025-07-24 | ID Usuario: 1
+Abono inválido
+== ABONO INICIADO ==
+Abono: 0 | Fecha: 2025-07-24 | ID Usuario: 1
+Abono inválido
+== ABONO INICIADO ==
+Abono: 0 | Fecha: 2025-07-24 | ID Usuario: 1
+Abono inválido
+== ABONO INICIADO ==
+Abono: 100 | Fecha: 2025-07-24 | ID Usuario: 1
+Abono guardado correctamente
+Saldo actualizado
+Intento de marcar como Pagada
+Consulta CxC ejecutada
+No se encontró CxC pagada para aplicar comisión
+== ABONO INICIADO ==
+Abono: 530 | Fecha: 2025-07-24 | ID Usuario: 1
+Abono guardado correctamente
+Saldo actualizado
+Intento de marcar como Pagada
+Consulta CxC ejecutada
+CxC válida: Remision=2 | Vendedor=0 | Fecha=2025-07-24
+Comisión ya existía: ID=0
+Faltan datos para insertar detalle. ID comisión=0
+== ABONO INICIADO ==
+Abono: 530 | Fecha: 2025-07-09 | ID Usuario: 1
+Abono guardado correctamente
+Saldo actualizado
+Intento de marcar como Pagada
+Consulta CxC ejecutada
+CxC válida: Remision=2 | Vendedor=0 | Fecha=2025-07-24
+Comisión ya existía: ID=0
+Faltan datos para insertar detalle. ID comisión=0
+== ABONO INICIADO ==
+Abono: 5200 | Fecha: 2025-07-24 | ID Usuario: 1
+Abono guardado correctamente
+Saldo actualizado
+Intento de marcar como Pagada
+Consulta CxC ejecutada
+CxC válida: Remision=1 | Vendedor=0 | Fecha=2025-07-24
+Comisión ya existía: ID=0
+Faltan datos para insertar detalle. ID comisión=0
+== ABONO INICIADO ==
+Abono: 5300 | Fecha: 2025-07-24 | ID Usuario: 1
+Abono guardado correctamente
+Saldo actualizado
+Intento de marcar como Pagada
+Consulta CxC ejecutada
+CxC válida: Remision=1 | Vendedor=0 | Fecha=2025-07-24
+Comisión ya existía: ID=0
+Faltan datos para insertar detalle. ID comisión=0
+== ABONO INICIADO ==
+Abono: 681250 | Fecha: 2025-09-15 | ID Usuario: 1
+Abono guardado correctamente
+Saldo actualizado
+Intento de marcar como Pagada
+Consulta CxC ejecutada
+CxC válida: Remision=15 | Vendedor=0 | Fecha=2025-09-18
+Comisión ya existía: ID=0
+Faltan datos para insertar detalle. ID comisión=0
