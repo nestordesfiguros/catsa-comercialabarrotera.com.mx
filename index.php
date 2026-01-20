@@ -241,8 +241,16 @@ $clsConsulta = new Consultas();
                             <label for="password" class="col-md-4 col-form-label text-md-end">Contraseña</label>
 
                             <div class="col-md-8">
-                                <input id="pwd" type="password" class="form-control " name="pwd" autocomplete="off">
+                                <div class="input-group">
+                                    <input id="pwd" type="password" class="form-control" name="pwd" autocomplete="off">
+
+                                    <button class="btn btn-outline-secondary" type="button" id="togglePwd" aria-label="Mostrar u ocultar contraseña">
+                                        <i class="fas fa-eye" id="togglePwdIcon"></i>
+                                    </button>
+                                </div>
                             </div>
+
+
                         </div>
 
 
@@ -377,6 +385,18 @@ $clsConsulta = new Consultas();
                 }
         */
         $(document).ready(function() {
+
+            // Mostrar / ocultar contraseña
+            $("#togglePwd").on("click", function() {
+                const $pwd = $("#pwd");
+                const isPassword = $pwd.attr("type") === "password";
+
+                $pwd.attr("type", isPassword ? "text" : "password");
+                $("#togglePwdIcon")
+                    .toggleClass("fa-eye", !isPassword)
+                    .toggleClass("fa-eye-slash", isPassword);
+            });
+
             var nombreUsuario = $("#nombreUsuario").text().trim();
 
             $("#email").change(

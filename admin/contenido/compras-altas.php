@@ -1,17 +1,5 @@
 <?php
 // contenido/compras-altas.php
-$clientes = [];
-$con = "SELECT * FROM cat_proveedores WHERE estatus=1";
-$rs = $clsConsulta->consultaGeneral($con);
-if ($clsConsulta->numrows > 0) {
-    $clientes = [];
-    foreach ($rs as $v => $val) {
-        $clientes[] = [
-            'id' => $val['id'],
-            'nombre' => $val['razon_social']
-        ];
-    }
-}
 ?>
 
 <!-- Imask js -->
@@ -22,88 +10,83 @@ if ($clsConsulta->numrows > 0) {
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="inicio">Inicio</a></li>
             <li class="breadcrumb-item"><a href="compras">Órdenes de Compra</a></li>
-            <li class="breadcrumb-item active" aria-current="page"> Alta</li>
-
+            <li class="breadcrumb-item active" aria-current="page">Alta</li>
         </ol>
     </nav>
 </div>
 
-<!-- Main content -->
 <section class="content">
     <div class="container-fluid">
-        <div class="row ">
+        <div class="row">
             <div class="d-flex justify-content-center align-items-center w-100">
-                <div class="col-10">
+                <div class="col-12 col-lg-10">
                     <div class="card">
-                        <form action="" method="post" id="formPedidos">
+                        <form action="" id="formPedidos" autocomplete="off">
                             <div class="card-header">
                                 <div class="row g-3">
                                     <div class="col-12 col-md-2">
-                                        <div class="form-outline">
+                                        <div class="form-floating">
                                             <input type="date" name="fecha" class="form-control" id="datepicker" value="<?= $fecha_bd ?>">
-                                            <label for="datepicker" class="form-label">Fecha</label>
+                                            <label for="datepicker">Fecha</label>
                                         </div>
-                                        <div id="errorFecha" class="invalid-feedback mt-2" style="display: none;">
+                                        <div id="errorFecha" class="invalid-feedback mt-2" style="display:none;">
                                             Escribe una Fecha
                                         </div>
                                     </div>
+
                                     <div class="col-12 col-md-8">
-                                        <div class="form-group">
-                                            <div class="form-outline">
-                                                <input type="text" id="clienteInput" class="form-control" name="cliente_nombre" list="clientes" placeholder="Selecciona un cliente..." autocomplete="off" />
-                                                <label for="clienteInput" class="form-label">Selecciona un proveedor</label>
-                                            </div>
-                                            <!-- Datalist con nombres de clientes -->
-                                            <datalist id="clientes">
-                                                <?php foreach ($clientes as $cliente): ?>
-                                                    <option value="<?= htmlspecialchars($cliente['nombre']) ?>" data-id="<?= $cliente['id'] ?>"></option>
-                                                <?php endforeach; ?>
-                                            </datalist>
+                                        <div class="form-floating">
+                                            <input type="text" id="clienteInput" class="form-control" name="cliente_nombre" list="clientes"
+                                                placeholder="Selecciona un proveedor..." autocomplete="off" />
+                                            <label for="clienteInput">Selecciona un proveedor</label>
                                         </div>
+
+                                        <div id="errorCliente" class="invalid-feedback mt-2" style="display:none;"></div>
+                                        <datalist id="clientes"></datalist>
                                     </div>
 
-                                    <div class="col-12 col-md-2">
-                                        <p><b> Total:</b> <span id="totalPedido">$0.00</span></p>
+                                    <div class="col-12 col-md-2 d-flex align-items-center justify-content-md-end">
+                                        <p class="mb-0"><b>Total:</b> <span id="totalPedido">$0.00</span></p>
                                     </div>
-
                                 </div>
                             </div>
+
                             <div class="card-body">
                                 <div class="col-12">
-                                    <div class="row">
-                                        <div class="col-6">
-                                            <button type="button" class="btn btn-primary btn-sm" onclick="FnAgregarModal();">Agregar Producto</button>
+                                    <div class="row g-2">
+                                        <div class="col-12 col-md-6">
+                                            <button type="button" class="btn btn-primary btn-sm" onclick="FnAgregarModal();">
+                                                Agregar Producto
+                                            </button>
                                         </div>
-                                        <div class="col-6">
+                                        <div class="col-12 col-md-6 text-md-end">
                                             <button type="submit" class="btn btn-success btn-sm" id="btnGuardar">Guardar</button>
                                         </div>
                                     </div>
                                 </div>
-                                <!-- ... tabla de productos ... -->
-                                <div class="mt-3">
+
+                                <div class="mt-3 table-responsive">
                                     <table id="tablaProductos" class="table table-bordered table-striped">
-                                        <thead class="bg-dark text-white" style="height: 20px;">
+                                        <thead class="table-dark">
                                             <tr>
-                                                <th class="text-center" style="width: 150px;">Cantidad</th>
+                                                <th class="text-center" style="width:150px;">Cantidad</th>
                                                 <th class="text-center">Producto</th>
-                                                <th class="text-center" style="width: 150px;">Precio U.</th>
-                                                <th class="text-center" style="width: 150px;">Total</th>
-                                                <th class="text-center" style="width: 80px;">Borrar</th>
+                                                <th class="text-center" style="width:150px;">Precio U.</th>
+                                                <th class="text-center" style="width:150px;">Total</th>
+                                                <th class="text-center" style="width:80px;">Borrar</th>
                                             </tr>
                                         </thead>
                                         <tbody id="tbodyProductos">
-                                            <!-- Mensaje inicial de tabla vacía -->
                                             <tr id="filaVacia">
-                                                <td colspan="3">Ningún producto agregado</td>
+                                                <td colspan="5">Ningún producto agregado</td>
                                             </tr>
                                         </tbody>
                                     </table>
                                 </div>
-
                             </div>
+
                             <input type="hidden" name="proveedor_id" id="clienteId">
                             <input type="hidden" name="total" id="inputSumaTotal">
-
                         </form>
                     </div>
                 </div>
@@ -112,46 +95,40 @@ if ($clsConsulta->numrows > 0) {
     </div>
 </section>
 
-
 <!-- Modal -->
 <div class="modal fade" id="modalAddProductos" tabindex="-1" aria-labelledby="modalAddProductosLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modalAddProductosLabel">Productos</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="FnCerrarModal();"></button>
             </div>
+
             <div class="modal-body">
-                <div class="mb-3 p-3">
-                    <div class="row d-flex justify-content-end">
-                        <div class="form-outline col-6">
-                            <input type="text" id="search" class="form-control">
-                            <label for="search" class="form-label">Buscar</label>
+                <div class="mb-3">
+                    <div class="row justify-content-end g-2">
+                        <div class="col-12 col-md-6">
+                            <div class="form-floating">
+                                <input type="text" id="search" class="form-control" placeholder="Buscar">
+                                <label for="search">Buscar</label>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <table id="TableListaProductos" class="table table-bordered table-striped w-100">
-                    <thead>
-                        <tr>
-                            <th>Clave</th>
-                            <th>Producto</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        $con = "SELECT * FROM cat_productos WHERE estatus=1";
-                        $rs = $clsConsulta->consultaGeneral($con);
-                        foreach ($rs as $v => $val) {
-                            $id_producto = $val['id_producto'];
-                            echo '<tr data-id="' . $id_producto . '" data-clave="' . $val['clave'] . '" data-nombre="' .
-                                $val['nombre'] . '">';
-                            echo '<td>' . $val['clave'] . '</td>';
-                            echo '<td><b class="text-primary" style="cursor:pointer;">' . $val['nombre'] . '</b></td>';
-                            echo '</tr>';
-                        }
-                        ?>
-                    </tbody>
-                </table>
+
+                <div class="table-responsive">
+                    <table id="TableListaProductos" class="table table-bordered table-striped w-100">
+                        <thead>
+                            <tr>
+                                <th style="width:160px;">Clave</th>
+                                <th>Producto</th>
+                                <th class="text-center" style="width:120px;">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
             </div>
         </div>
     </div>
@@ -159,12 +136,13 @@ if ($clsConsulta->numrows > 0) {
 
 <script>
     // =============================================
-    // FUNCIONES PRINCIPALES
+    // MODAL
     // =============================================
-
-    // Abrir y cerrar modal de productos
     function FnAgregarModal() {
         $('#modalAddProductos').modal('show');
+        if (window.tablaProductosModal) {
+            window.tablaProductosModal.ajax.reload();
+        }
     }
 
     function FnCerrarModal() {
@@ -172,39 +150,63 @@ if ($clsConsulta->numrows > 0) {
     }
 
     // =============================================
-    // MANEJO DE LA TABLA DE PRODUCTOS
+    // TABLA VACÍA
     // =============================================
-
     function actualizarMensajeTablaVacia() {
         const $tbody = $('#tbodyProductos');
-        if ($tbody.children().length === 0) {
-            $tbody.append('<tr id="filaVacia"><td colspan="3">No hay productos agregados</td></tr>');
+        const filas = $tbody.find('tr.fila-producto').length;
+
+        if (filas === 0) {
+            if ($('#filaVacia').length === 0) {
+                $tbody.append('<tr id="filaVacia"><td colspan="5">Ningún producto agregado</td></tr>');
+            }
         } else {
             $('#filaVacia').remove();
         }
     }
 
     // =============================================
-    // MANEJO DE CLIENTES
+    // PROVEEDORES (ENDPOINT)
     // =============================================
+    let proveedoresMap = {}; // nombre -> id
 
-    function mostrarErrorCliente(mensaje) {
-        $('#errorCliente').text(mensaje).show();
-        $('#clienteInput').addClass('is-invalid');
-        $('#clienteInput').focus();
+    function cargarProveedores() {
+        $.ajax({
+            url: 'ajax/compras/proveedores.php',
+            method: 'POST',
+            dataType: 'json',
+            success: function(res) {
+                const $dl = $('#clientes');
+                $dl.empty();
+                proveedoresMap = {};
+
+                if (res && res.success && Array.isArray(res.data)) {
+                    res.data.forEach(function(p) {
+                        proveedoresMap[p.nombre] = p.id;
+                        $dl.append(`<option value="${escapeHtml(p.nombre)}"></option>`);
+                    });
+                }
+            },
+            error: function() {
+                // no romper la UX si falla
+            }
+        });
     }
 
     // =============================================
-    // GUARDAR COMPRA (AJAX)
+    // GUARDAR (AJAX)
     // =============================================
-
     function guardarPedido(form) {
-        const formData = new FormData(form);
-        $('#btnGuardar').prop('disabled', true);
+        var $btn = $('#btnGuardar');
+        var formData = new FormData(form);
 
-        alertify.confirm('Confirmación', '¿Estás seguro de que deseas guardar la compra?',
+        alertify.confirm(
+            'Confirmación',
+            '¿Estás seguro de que deseas guardar la compra?',
             function() {
-                $('#modalSpiner').modal('show');
+                btnLock($btn, true, 'Guardando...');
+                uiBlock(true);
+
                 $.ajax({
                     url: 'ajax/compras/guardar.php',
                     method: 'POST',
@@ -212,62 +214,76 @@ if ($clsConsulta->numrows > 0) {
                     processData: false,
                     contentType: false,
                     success: function(respuesta) {
-                        $('#modalSpiner').modal('hide');
+                        var r = (respuesta || '').trim();
 
-                        const r = (respuesta || '').trim();
                         if (r === 'success') {
+                            alertify.success('Compra guardada');
                             location.href = "compras";
-                        } else if (r === 'duplicado') {
+                            return;
+                        }
+
+                        uiBlock(false);
+                        btnLock($btn, false);
+
+                        if (r === 'duplicado') {
                             alertify.error('Ya existe una orden de compra con los mismos datos.');
-                            $('#btnGuardar').prop('disabled', false);
                         } else {
                             alertify.alert('Aviso', 'No se ha capturado ningún producto.');
-                            $('#btnGuardar').prop('disabled', false);
                         }
                     },
                     error: function(xhr) {
-                        document.getElementById('spinner').style.display = 'none';
-                        $('#btnGuardar').prop('disabled', false);
+                        uiBlock(false);
+                        btnLock($btn, false);
                         alertify.error('Error de conexión: ' + xhr.statusText);
                     }
                 });
             },
             function() {
-                $('#btnGuardar').prop('disabled', false);
-                document.getElementById('spinner').style.display = 'none';
+                // Cancelado
                 alertify.error('Guardar compra cancelada');
             }
         );
     }
 
-    // =============================================
-    // AUXILIARES
-    // =============================================
 
-    function resetearFormulario() {
-        $('#formPedidos')[0].reset();
-        $('#clienteId').val('');
-        $('#tbodyProductos').empty();
-        actualizarMensajeTablaVacia();
-        $('.is-valid').removeClass('is-valid');
+    // =============================================
+    // TOTALES
+    // =============================================
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('es-MX', {
+            style: 'currency',
+            currency: 'MXN',
+            maximumFractionDigits: 2,
+            useGrouping: true
+        }).format(amount);
     }
 
-    // ---- Calcular total por fila ----
     function calcularTotal(fila) {
         const cantidad = parseFloat((fila.find('.cantidad').val() || '0').toString().replace(/,/g, '')) || 0;
         const precioVenta = parseFloat((fila.find('.precio_venta').val() || '0').toString().replace(/,/g, '')) || 0;
         const total = cantidad * precioVenta;
 
-        const totalFormateado = new Intl.NumberFormat('es-MX', {
-            style: 'currency',
-            currency: 'MXN'
-        }).format(total);
-
-        fila.find('td:eq(3)').text(totalFormateado);
+        fila.find('td:eq(3)').text(formatCurrency(total));
         actualizarSumaTotal();
     }
 
-    // ---- IMask para precio ----
+    function actualizarSumaTotal() {
+        let sumaTotal = 0;
+
+        $('#tbodyProductos tr.fila-producto').each(function() {
+            const totalTexto = $(this).find('td:eq(3)').text()
+                .replace('$', '').replace(/,/g, '').trim();
+            const total = parseFloat(totalTexto) || 0;
+            sumaTotal += total;
+        });
+
+        $("#inputSumaTotal").val(sumaTotal);
+        $('#totalPedido').text(formatCurrency(sumaTotal));
+    }
+
+    // =============================================
+    // IMASK
+    // =============================================
     function aplicarMaskPrecioVenta() {
         const precioVentaInputs = document.querySelectorAll('.precio_venta');
         precioVentaInputs.forEach(function(input) {
@@ -285,37 +301,8 @@ if ($clsConsulta->numrows > 0) {
         });
     }
 
-    // ---- Actualiza texto de total por fila sin recalcular suma (utilidad interna) ----
-    function actualizarTotalPorFila(fila) {
-        const cantidad = parseFloat((fila.find('.cantidad').val() || '0').toString().replace(/,/g, '')) || 0;
-        const precioVenta = parseFloat((fila.find('.precio_venta').val() || '0').toString().replace(/,/g, '')) || 0;
-        const total = cantidad * precioVenta;
-        fila.find('td:eq(3)').text(formatCurrency(total));
-    }
-
-    function formatCurrency(amount) {
-        return new Intl.NumberFormat('es-MX', {
-            style: 'currency',
-            currency: 'MXN',
-            maximumFractionDigits: 2,
-            useGrouping: true
-        }).format(amount);
-    }
-
-    // ---- Suma total de la tabla ----
-    function actualizarSumaTotal() {
-        let sumaTotal = 0;
-        $('#tbodyProductos tr').each(function() {
-            const totalTexto = $(this).find('td:eq(3)').text().replace('$', '').replace(/,/g, '').trim();
-            const total = parseFloat(totalTexto) || 0;
-            sumaTotal += total;
-            $("#inputSumaTotal").val(sumaTotal);
-        });
-        $('#totalPedido').text(formatCurrency(sumaTotal));
-    }
-
     // =============================================
-    // NUEVO: Obtener último precio desde mov_compras
+    // ÚLTIMO PRECIO (ENDPOINT)
     // =============================================
     function obtenerUltimoPrecio(idProducto, proveedorId = '') {
         $.ajax({
@@ -327,37 +314,70 @@ if ($clsConsulta->numrows > 0) {
                 id_proveedor: proveedorId
             },
             success: function(res) {
-                // Log para depurar qué está llegando
-                console.log('ultimo-precio response:', res);
-
                 const $fila = $(`#tbodyProductos tr.fila-producto[data-id="${idProducto}"]`);
                 const $inputPrecio = $fila.find('input.precio_venta');
 
-                // Normalizamos a número aunque venga como string
                 const precioNum = (res && res.success) ? parseFloat(res.precio) : NaN;
 
                 if (!isNaN(precioNum)) {
-                    // Seteamos sin formato; IMask se encarga de mostrarlo bonito tras el 'input'
                     $inputPrecio.val(precioNum.toFixed(2)).trigger('input');
                 } else {
-                    // Sin historial o respuesta inválida: dejemos vacío (o '0.00' si prefieres)
                     $inputPrecio.val('').trigger('input');
                 }
-            },
-            error: function(xhr, status, err) {
-                console.warn('No se pudo obtener el último precio del producto', idProducto, status, err, xhr?.responseText);
             }
         });
     }
 
+    function refrescarPreciosPorProveedor() {
+        const proveedorId = $('#clienteId').val() || '';
+        $('#tbodyProductos tr.fila-producto').each(function() {
+            const idProducto = $(this).data('id');
+            obtenerUltimoPrecio(idProducto, proveedorId);
+        });
+    }
 
     // =============================================
-    // DOCUMENT READY
+    // EXCLUIDOS: productos ya agregados
+    // =============================================
+    function getProductosExcluidos() {
+        const ids = [];
+        $('#tbodyProductos tr.fila-producto').each(function() {
+            const idp = parseInt($(this).data('id'), 10);
+            if (idp > 0) ids.push(idp);
+        });
+        return ids.join(',');
+    }
+
+    // =============================================
+    // HELPERS
+    // =============================================
+    function escapeHtml(text) {
+        return String(text)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    // =============================================
+    // READY
     // =============================================
     $(document).ready(function() {
 
-        // DataTable del modal de productos
+        cargarProveedores();
+
+        // DataTable modal (SERVER-SIDE)
         $('#TableListaProductos').dataTable({
+            serverSide: true,
+            processing: true,
+            ajax: {
+                url: 'ajax/compras/tabla-productos.php',
+                type: 'POST',
+                data: function(d) {
+                    d.excluded_ids = getProductosExcluidos();
+                }
+            },
             ordering: true,
             pageLength: 10,
             dom: "<'row'<'col-sm-6'l><'col-sm-6'p>>" +
@@ -370,57 +390,82 @@ if ($clsConsulta->numrows > 0) {
                 url: "https://cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json",
                 sSearch: '<i class="fa fa-search" aria-hidden="true"></i> Buscar'
             },
-            responsive: true
+            responsive: true,
+            columns: [{
+                    data: 'clave'
+                },
+                {
+                    data: 'nombre'
+                },
+                {
+                    data: null,
+                    orderable: false,
+                    searchable: false,
+                    className: 'text-center',
+                    render: function(data, type, row) {
+                        const idp = row.id_producto || '';
+                        const clave = row.clave || '';
+                        const nombre = row.nombre || '';
+                        return `
+                            <button type="button"
+                                class="btn btn-sm btn-primary btn-agregar-producto"
+                                data-id="${idp}"
+                                data-clave="${escapeHtml(clave)}"
+                                data-nombre="${escapeHtml(nombre)}">
+                                Agregar
+                            </button>
+                        `;
+                    }
+                }
+            ]
         });
 
-        var oTable = $('#TableListaProductos').DataTable();
-        $('#search').keyup(function() {
-            oTable.search($(this).val()).draw();
+        window.tablaProductosModal = $('#TableListaProductos').DataTable();
+
+        $('#search').on('keyup', function() {
+            window.tablaProductosModal.search($(this).val()).draw();
         });
 
-        // Click en producto del modal -> agregar fila y traer último precio
-        $('#TableListaProductos tbody').on('click', 'tr', function() {
-            const $fila = $(this);
-            const clave = $fila.data('clave');
-            const nombre = $fila.data('nombre');
-            const id_producto = $fila.data('id');
+        // AGREGAR producto (por botón)
+        $('#TableListaProductos tbody').on('click', '.btn-agregar-producto', function() {
+            const id_producto = parseInt($(this).data('id'), 10) || 0;
+            const clave = String($(this).data('clave') || '');
+            const nombre = String($(this).data('nombre') || '');
 
-            // Evitar duplicados por clave
-            if ($(`input[name="clave[]"][value="${clave}"]`).length > 0) {
-                alertify.warning('¡Este producto ya está en la lista!');
-                return;
-            }
+            if (id_producto <= 0) return;
 
-            // Agregar fila con data-id para localizarla luego
             const nuevaFila = `
                 <tr class="fila-producto" data-id="${id_producto}">
                     <td><input type="number" class="form-control cantidad" value="1" min="1" name="cantidad[]" required></td>
-                    <td>${nombre}</td>
+                    <td>${escapeHtml(nombre)}</td>
                     <td class="text-center">
-                        <input type="text" name="precio_venta[]" class="precio_venta" required />
+                        <input type="text" name="precio_venta[]" class="form-control precio_venta" required />
                     </td>
                     <td class="text-center">Total</td>
                     <td>
                         <input type="hidden" name="producto_id[]" value="${id_producto}">
-                        <input type="hidden" name="clave[]" value="${clave}">
+                        <input type="hidden" name="clave[]" value="${escapeHtml(clave)}">
                         <div class="text-center">
                             <i class="fas fa-trash fa-lg btn-eliminar text-danger" style="cursor:pointer;"></i>
                         </div>
                     </td>
                 </tr>
             `;
-            $('#tbodyProductos').append(nuevaFila);
 
+            $('#tbodyProductos').append(nuevaFila);
             aplicarMaskPrecioVenta();
             actualizarMensajeTablaVacia();
 
-            // NUEVO: traer último precio (por proveedor si ya está seleccionado)
+            // traer último precio
             const proveedorId = $('#clienteId').val() || '';
             obtenerUltimoPrecio(id_producto, proveedorId);
 
-            // Calcular total de la nueva fila (recalculará otra vez al llegar el precio)
+            // total inicial
             const nuevaFilaElement = $('#tbodyProductos tr').last();
             calcularTotal(nuevaFilaElement);
+
+            // refrescar lista para que ya no aparezca
+            if (window.tablaProductosModal) window.tablaProductosModal.ajax.reload();
 
             FnCerrarModal();
         });
@@ -431,18 +476,20 @@ if ($clsConsulta->numrows > 0) {
             calcularTotal(fila);
         });
 
-        // Eliminar producto con confirmación
+        // Eliminar producto
         $('#tbodyProductos').on('click', '.btn-eliminar', function() {
             const $fila = $(this).closest('.fila-producto');
             const nombreProducto = $fila.find('td:eq(1)').text().trim();
 
             alertify.confirm(
                 'Confirmación',
-                `¿Estás seguro de que deseas eliminar el producto: ${nombreProducto}?`,
+                `¿Estás seguro de que deseas eliminar el producto: ${escapeHtml(nombreProducto)}?`,
                 function() {
                     $fila.remove();
                     actualizarMensajeTablaVacia();
                     actualizarSumaTotal();
+
+                    if (window.tablaProductosModal) window.tablaProductosModal.ajax.reload();
                     alertify.success('Producto eliminado');
                 },
                 function() {
@@ -453,12 +500,41 @@ if ($clsConsulta->numrows > 0) {
 
         // Prevenir submit con Enter
         $('#formPedidos').on('keypress', function(e) {
-            if (e.keyCode === 13) {
-                e.preventDefault();
+            if (e.keyCode === 13) e.preventDefault();
+        });
+
+        // Proveedor datalist -> setear id + refrescar precios
+        $('#clienteInput').on('input', function() {
+            const nombre = $('#clienteInput').val().trim();
+            const id = proveedoresMap[nombre] || '';
+
+            if (id) {
+                $('#clienteId').val(id);
+                $('#clienteInput').removeClass('is-invalid').addClass('is-valid');
+                $('#errorCliente').hide();
+
+                refrescarPreciosPorProveedor();
+            } else {
+                $('#clienteId').val('');
+                $('#clienteInput').removeClass('is-valid').addClass('is-invalid');
             }
         });
 
-        // VALIDACIÓN DEL FORMULARIO
+        function mostrarErrorCliente(mensaje) {
+            $('#errorCliente').text(mensaje).show();
+            $('#clienteInput').addClass('is-invalid');
+            $('#clienteInput').focus();
+        }
+
+        $.validator.addMethod("clientExists", function(value, element) {
+            const id = $('#clienteId').val();
+            if (!id) {
+                mostrarErrorCliente("Proveedor no encontrado. Escriba un proveedor válido.");
+                return false;
+            }
+            return true;
+        }, "Este proveedor no existe.");
+
         $('#formPedidos').validate({
             rules: {
                 fecha: {
@@ -474,7 +550,7 @@ if ($clsConsulta->numrows > 0) {
                     required: "Escribe una fecha"
                 },
                 cliente_nombre: {
-                    required: "Selecciona un cliente"
+                    required: "Selecciona un proveedor"
                 }
             },
             errorElement: 'div',
@@ -493,47 +569,42 @@ if ($clsConsulta->numrows > 0) {
             }
         });
 
-        // Inicializar mensaje de tabla vacía
         actualizarMensajeTablaVacia();
 
-        // Input de cliente/datalist -> setear #clienteId
-        $('#clienteInput').on('input', function() {
-            const opcion = $('#clientes option').filter(function() {
-                return $(this).val() === $('#clienteInput').val();
-            });
-
-            if (opcion.length > 0) {
-                const clienteId = opcion.data('id');
-                $('#clienteId').val(clienteId);
-                $('#clienteInput').removeClass('is-invalid').addClass('is-valid');
-            } else {
-                $('#clienteId').val('');
-                $('#clienteInput').removeClass('is-valid').addClass('is-invalid');
-            }
-        });
-
-        // Regla personalizada: cliente debe existir
-        $.validator.addMethod("clientExists", function(value, element) {
-            const clienteId = $('#clienteId').val();
-            if (!clienteId) {
-                const clienteInput = $('#clienteInput').val().trim();
-                const clienteValido = $('#clientes option').filter(function() {
-                    return $(this).val() === clienteInput;
-                }).length > 0;
-
-                if (clienteValido) {
-                    const clienteId = $('#clientes option').filter(function() {
-                        return $(this).val() === clienteInput;
-                    }).data('id');
-                    // obtenerDatosCliente(clienteId); // si luego quieres cargar info extra
-                    return true;
-                } else {
-                    mostrarErrorCliente("Cliente no encontrado. Escriba un cliente válido.");
-                    return false;
+        // =============================================
+        // UI BLOCK (usa tu modal #modalSpiner)
+        // =============================================
+        function uiBlock(on) {
+            if (on) {
+                // Bootstrap modal (si existe)
+                if ($('#modalSpiner').length) {
+                    $('#modalSpiner').modal({
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                    $('#modalSpiner').modal('show');
                 }
+                // Bloqueo extra por si el modal no cubre todo
+                $('body').addClass('pe-none');
+                $('#modalSpiner').removeClass('pe-none'); // permite que el modal sí funcione
+            } else {
+                if ($('#modalSpiner').length) $('#modalSpiner').modal('hide');
+                $('body').removeClass('pe-none');
             }
-            return true;
-        }, "Este cliente no existe.");
+        }
+
+        function btnLock($btn, on, texto) {
+            if (!$btn || !$btn.length) return;
+            if (on) {
+                $btn.data('txt', $btn.html());
+                $btn.prop('disabled', true);
+                if (texto) $btn.html(texto);
+            } else {
+                $btn.prop('disabled', false);
+                var old = $btn.data('txt');
+                if (old) $btn.html(old);
+            }
+        }
 
     });
 </script>

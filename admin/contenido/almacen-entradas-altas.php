@@ -4,7 +4,7 @@
 $idEmpresa = isset($_SESSION['id_empresa']) ? (int)$_SESSION['id_empresa'] : 0;
 
 // Obtener datos necesarios (FILTRADOS)
-$proveedores = $clsConsulta->consultaGeneral("SELECT id, razon_social as nombre FROM cat_proveedores WHERE estatus=1 AND id_empresa={$idEmpresa} ORDER BY razon_social ASC");
+$proveedores = $clsConsulta->consultaGeneral("SELECT id, razon_social, nombre_comercial as nombre FROM cat_proveedores WHERE estatus=1 AND id_empresa={$idEmpresa} ORDER BY nombre_comercial ASC");
 if (!is_array($proveedores) || $clsConsulta->numrows <= 0) $proveedores = [];
 
 $almacenes = $clsConsulta->consultaGeneral("SELECT id, almacen FROM cat_almacenes WHERE estatus=1 AND id_empresa={$idEmpresa} ORDER BY almacen ASC");
@@ -13,7 +13,7 @@ if (!is_array($almacenes) || $clsConsulta->numrows <= 0) $almacenes = [];
 // ODCs disponibles por empresa
 $odcs = $clsConsulta->consultaGeneral("
     SELECT c.id, c.fecha, c.id_proveedor,
-           COALESCE(p.razon_social, p.nombre_Comercial, 'Proveedor no especificado') AS proveedor_nombre
+           COALESCE(p.nombre_comercial, p.nombre_Comercial, 'Proveedor no especificado') AS proveedor_nombre
     FROM cab_compras c
     LEFT JOIN cat_proveedores p ON c.id_proveedor = p.id
     WHERE c.id_empresa = {$idEmpresa}
@@ -304,29 +304,75 @@ $fecha_bd = date('Y-m-d');
         $('#pedidoIncompleto').change(function() {
             $('#incompletoObservacionesContainer').toggle(this.checked);
         });
-    });
 
-    function cargarProductosODC(odcId) {
-        $.ajax({
-            url: 'ajax/almacen-entradas/obtener-productos-odc.php',
-            method: 'POST',
-            data: {
-                odc_id: odcId
-            },
-            dataType: 'json',
-            beforeSend: function() {
-                $('#productosTableBody').html('<tr><td colspan="5" class="text-center">Cargando productos de ODC...</td></tr>');
-            },
-            success: function(response) {
-                productosODC = {};
+        // Al modificar la cantidad recibida
+        $('#productosTableBody').on('input', '.cantidad-recibida', function() {
+            const row = $(this).closest('tr');
+            const cantidadODC = row.data('cantidad-odc');
+            const cantidadRecibida = parseFloat($(this).val()) || 0;
+            const pendiente = cantidadODC - cantidadRecibida;
 
-                if (response.success && response.productos.length > 0) {
-                    $('#productosTableBody').empty();
+            row.find('.pendiente-cell')
+                .text(pendiente)
+                .data('cantidad-pendiente', pendiente)
+                .toggleClass('text-danger', pendiente > 0);
 
-                    response.productos.forEach(function(producto) {
-                        productosODC[producto.id_producto] = producto.cantidad;
+            // Si la cantidad recibida es igual a la original, desmarcar "pedido incompleto"
+            const allEqual = checkAllEqual(); // Función que revisa si todas las cantidades son igual a las originales
 
-                        const row = `
+            if (allEqual) {
+                $('#pedidoIncompleto').prop('checked', false);
+                $('#incompletoObservacionesContainer').hide();
+                $('textarea[name="incompleto_observaciones"]').val('');
+            } else {
+                $('#pedidoIncompleto').prop('checked', true);
+                $('#incompletoObservacionesContainer').show();
+            }
+
+            if (pendiente > 0) {
+                $('#pedidoIncompleto').prop('checked', true);
+                $('#incompletoObservacionesContainer').show();
+            }
+        });
+
+        // Función que revisa si todas las cantidades son iguales a las originales
+        function checkAllEqual() {
+            let allEqual = true;
+
+            $('#productosTableBody tr').each(function() {
+                const cantidadODC = $(this).data('cantidad-odc');
+                const cantidadRecibida = parseFloat($(this).find('.cantidad-recibida').val()) || 0;
+
+                if (cantidadODC !== cantidadRecibida) {
+                    allEqual = false;
+                    return false; // Sale del bucle si encuentra una diferencia
+                }
+            });
+
+            return allEqual;
+        }
+
+        function cargarProductosODC(odcId) {
+            $.ajax({
+                url: 'ajax/almacen-entradas/obtener-productos-odc.php',
+                method: 'POST',
+                data: {
+                    odc_id: odcId
+                },
+                dataType: 'json',
+                beforeSend: function() {
+                    $('#productosTableBody').html('<tr><td colspan="5" class="text-center">Cargando productos de ODC...</td></tr>');
+                },
+                success: function(response) {
+                    productosODC = {};
+
+                    if (response.success && response.productos.length > 0) {
+                        $('#productosTableBody').empty();
+
+                        response.productos.forEach(function(producto) {
+                            productosODC[producto.id_producto] = producto.cantidad;
+
+                            const row = `
                             <tr data-id="${producto.id_producto}" data-cantidad-odc="${producto.cantidad}">
                                 <td>
                                     <input type="number" name="cantidades[${producto.id_producto}]"
@@ -339,8 +385,8 @@ $fecha_bd = date('Y-m-d');
                                     <input type="hidden" name="productos[]" value="${producto.id_producto}">
                                     <input type="hidden" name="claves[]" value="${producto.clave}">
                                 </td>
-                                <td class="pendiente-cell" data-cantidad-pendiente="${producto.cantidad}">
-                                    ${producto.cantidad}
+                                <td class="pendiente-cell" data-cantidad-pendiente="0">
+                                    0
                                 </td>
                                 <td class="text-center">
                                     <button type="button" class="btn btn-danger btn-sm btn-eliminar">
@@ -349,242 +395,153 @@ $fecha_bd = date('Y-m-d');
                                 </td>
                             </tr>`;
 
-                        $('#productosTableBody').append(row);
-                    });
+                            $('#productosTableBody').append(row);
+                        });
 
-                    $('#noProductsRow').remove();
+                        $('#noProductsRow').remove();
 
-                    $('.cantidad-recibida').on('input', function() {
-                        const row = $(this).closest('tr');
-                        const cantidadODC = row.data('cantidad-odc');
-                        const cantidadRecibida = parseFloat($(this).val()) || 0;
-                        const pendiente = cantidadODC - cantidadRecibida;
+                        $('.cantidad-recibida').on('input', function() {
+                            const row = $(this).closest('tr');
+                            const cantidadODC = row.data('cantidad-odc');
+                            const cantidadRecibida = parseFloat($(this).val()) || 0;
+                            const pendiente = cantidadODC - cantidadRecibida;
 
-                        row.find('.pendiente-cell')
-                            .text(pendiente)
-                            .data('cantidad-pendiente', pendiente)
-                            .toggleClass('text-danger', pendiente > 0);
+                            row.find('.pendiente-cell')
+                                .text(pendiente)
+                                .data('cantidad-pendiente', pendiente)
+                                .toggleClass('text-danger', pendiente > 0);
 
-                        if (pendiente > 0) {
-                            $('#pedidoIncompleto').prop('checked', true);
-                            $('#incompletoObservacionesContainer').show();
-                        }
-                    });
+                            if (pendiente > 0) {
+                                $('#pedidoIncompleto').prop('checked', true);
+                                $('#incompletoObservacionesContainer').show();
+                            }
+                        });
 
-                } else {
-                    $('#productosTableBody').html('<tr id="noProductsRow"><td colspan="5">No hay productos en esta ODC</td></tr>');
-                }
-            },
-            error: function() {
-                alertify.error('Error al cargar productos de la ODC');
-                $('#productosTableBody').html('<tr id="noProductsRow"><td colspan="5">Error al cargar productos</td></tr>');
-            }
-        });
-    }
-
-    function agregarProductosSeleccionados() {
-        let agregados = 0;
-        const odcId = $('#odcId').val();
-
-        $('#productosModalTable tbody tr').each(function() {
-            if ($(this).find('.producto-check').is(':checked')) {
-                const id = $(this).data('id');
-                const clave = $(this).data('clave');
-                const nombre = $(this).data('nombre');
-                const unidad = $(this).data('unidad') || 'PZA';
-
-                if ($(`#productosTableBody tr[data-id="${id}"]`).length === 0) {
-                    const cantidadODC = productosODC[id] || 1;
-                    const mostrarPendiente = odcId ? '0' : '';
-
-                    const row = `
-                        <tr data-id="${id}" data-cantidad-odc="${cantidadODC}">
-                            <td>
-                                <input type="number" name="cantidades[${id}]"
-                                       class="form-control cantidad-recibida"
-                                       value="${cantidadODC}" min="0" required>
-                            </td>
-                            <td>${unidad}</td>
-                            <td>
-                                ${nombre}
-                                <input type="hidden" name="productos[]" value="${id}">
-                                <input type="hidden" name="claves[]" value="${clave}">
-                            </td>
-                            <td class="pendiente-cell" data-cantidad-pendiente="0">${mostrarPendiente}</td>
-                            <td class="text-center">
-                                <button type="button" class="btn btn-danger btn-sm btn-eliminar">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>`;
-
-                    $('#productosTableBody').append(row);
-                    $('#noProductsRow').remove();
-                    agregados++;
-
-                    $(`#productosTableBody tr[data-id="${id}"] .cantidad-recibida`).on('input', function() {
-                        if (!odcId) return;
-
-                        const row = $(this).closest('tr');
-                        const cantidadODC = row.data('cantidad-odc');
-                        const cantidadRecibida = parseFloat($(this).val()) || 0;
-                        const pendiente = cantidadODC - cantidadRecibida;
-
-                        row.find('.pendiente-cell')
-                            .text(pendiente)
-                            .data('cantidad-pendiente', pendiente)
-                            .toggleClass('text-danger', pendiente > 0);
-
-                        if (pendiente > 0) {
-                            $('#pedidoIncompleto').prop('checked', true);
-                            $('#incompletoObservacionesContainer').show();
-                        }
-                    });
-                }
-            }
-        });
-
-        if (agregados > 0) {
-            const modalEl = document.getElementById('productosModal');
-
-            if (typeof bootstrap !== 'undefined') {
-                const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-                modal.hide();
-            } else if (typeof mdb !== 'undefined') {
-                const modal = mdb.Modal.getInstance(modalEl) || new mdb.Modal(modalEl);
-                modal.hide();
-            }
-
-            alertify.success(`${agregados} producto(s) agregado(s)`);
-        } else {
-            alertify.warning('No se seleccionaron productos nuevos');
-        }
-    }
-
-    $(document).on('click', '.btn-eliminar', function() {
-        const row = $(this).closest('tr');
-        const nombre = row.find('td:eq(2)').text().trim();
-
-        alertify.confirm('Confirmar', `¿Eliminar <strong>${nombre}</strong> de la lista?`,
-            function() {
-                row.remove();
-                if ($('#productosTableBody tr').not('#noProductsRow').length === 0) {
-                    $('#productosTableBody').html('<tr id="noProductsRow"><td colspan="5" class="text-center">No hay productos agregados</td></tr>');
-                }
-                alertify.success('Producto eliminado');
-            },
-            function() {
-                alertify.error('Operación cancelada');
-            }
-        );
-    });
-
-    $('#formEntradaAlmacen').validate({
-        rules: {
-            fecha: {
-                required: true
-            },
-            almacen_id: {
-                required: true
-            },
-            proveedor_id: {
-                required: true
-            }
-        },
-        messages: {
-            fecha: {
-                required: "La fecha es obligatoria"
-            },
-            almacen_id: {
-                required: "Selecciona un almacén"
-            },
-            proveedor_id: {
-                required: "Selecciona un proveedor"
-            }
-        },
-        errorElement: 'div',
-        errorPlacement: function(error, element) {
-            error.addClass('invalid-feedback');
-            element.closest('.form-group').append(error);
-        },
-        highlight: function(element) {
-            $(element).addClass('is-invalid').removeClass('is-valid');
-        },
-        unhighlight: function(element) {
-            $(element).removeClass('is-invalid').addClass('is-valid');
-        },
-        submitHandler: function(form) {
-            const odcId = $('#odcId').val();
-
-            if (!odcId) {
-                const ref = $('input[name="referencia"]').val().trim();
-                const obs = $('textarea[name="observaciones"]').val().trim();
-
-                if (!ref) {
-                    alertify.alert('Error', 'El campo Documento de Referencia es obligatorio cuando no se selecciona una ODC');
-                    return false;
-                }
-                if (!obs) {
-                    alertify.alert('Error', 'El campo Observaciones es obligatorio cuando no se selecciona una ODC');
-                    return false;
-                }
-            }
-
-            if ($('#productosTableBody tr').not('#noProductsRow').length === 0) {
-                alertify.alert('Error', 'Debes agregar al menos un producto');
-                return false;
-            }
-
-            let cantidadesValidas = true;
-            $('.cantidad-recibida').each(function() {
-                if (!$(this).val() || parseFloat($(this).val()) <= 0) {
-                    cantidadesValidas = false;
-                    $(this).addClass('is-invalid');
-                    return false;
+                    } else {
+                        $('#productosTableBody').html('<tr id="noProductsRow"><td colspan="5">No hay productos en esta ODC</td></tr>');
+                    }
+                },
+                error: function() {
+                    alertify.error('Error al cargar productos de la ODC');
+                    $('#productosTableBody').html('<tr id="noProductsRow"><td colspan="5">Error al cargar productos</td></tr>');
                 }
             });
+        }
 
-            if (!cantidadesValidas) {
-                alertify.alert('Error', 'Todas las cantidades deben ser mayores a cero');
-                return false;
-            }
+        // Eliminar producto de la lista
+        $(document).on('click', '.btn-eliminar', function() {
+            const row = $(this).closest('tr');
+            const nombre = row.find('td:eq(2)').text().trim();
 
-            const datos = $(form).serialize();
-
-            const incompleto = $('#pedidoIncompleto').is(':checked');
-            const msg = incompleto ? '¿Registrar entrada marcando como PEDIDO INCOMPLETO?' : '¿Confirmar registro de entrada de almacén?';
-
-            alertify.confirm('Confirmar', msg,
+            alertify.confirm('Confirmar', `¿Eliminar <strong>${nombre}</strong> de la lista?`,
                 function() {
-                    $('#modalSpiner').modal('show');
-                    $.ajax({
-                        type: "POST",
-                        url: "ajax/almacen-entradas/guardar.php",
-                        data: datos,
-                        dataType: 'text',
-                        success: function(response) {
-                            $('#modalSpiner').modal('hide');
-                            if ((response || '').trim() === 'success') {
-                                alertify.success('Entrada guardada correctamente.');
-                                window.location.href = 'almacen-entradas';
-                            } else {
-                                alertify.error('Error al guardar la entrada: ' + response);
-                            }
-                        },
-                        error: function(xhr) {
-                            $('#modalSpiner').modal('hide');
-                            alertify.error('Error de conexión con el servidor.');
-                            console.error(xhr);
-                        }
-                    });
+                    row.remove();
+                    if ($('#productosTableBody tr').not('#noProductsRow').length === 0) {
+                        $('#productosTableBody').html('<tr id="noProductsRow"><td colspan="5" class="text-center">No hay productos agregados</td></tr>');
+                    }
+                    alertify.success('Producto eliminado');
                 },
                 function() {
                     alertify.error('Operación cancelada');
                 }
             );
+        });
 
-            return false;
-        }
+        // Validación de formulario
+        $('#formEntradaAlmacen').validate({
+            rules: {
+                fecha: {
+                    required: true
+                },
+                almacen_id: {
+                    required: true
+                },
+                proveedor_id: {
+                    required: true
+                }
+            },
+            messages: {
+                fecha: {
+                    required: "La fecha es obligatoria"
+                },
+                almacen_id: {
+                    required: "Selecciona un almacén"
+                },
+                proveedor_id: {
+                    required: "Selecciona un proveedor"
+                }
+            },
+            submitHandler: function(form) {
+                const odcId = $('#odcId').val();
+                if (!odcId) {
+                    const ref = $('input[name="referencia"]').val().trim();
+                    const obs = $('textarea[name="observaciones"]').val().trim();
+
+                    if (!ref) {
+                        alertify.alert('Error', 'El campo Documento de Referencia es obligatorio cuando no se selecciona una ODC');
+                        return false;
+                    }
+                    if (!obs) {
+                        alertify.alert('Error', 'El campo Observaciones es obligatorio cuando no se selecciona una ODC');
+                        return false;
+                    }
+                }
+
+                if ($('#productosTableBody tr').not('#noProductsRow').length === 0) {
+                    alertify.alert('Error', 'Debes agregar al menos un producto');
+                    return false;
+                }
+
+                let cantidadesValidas = true;
+                $('.cantidad-recibida').each(function() {
+                    if (!$(this).val() || parseFloat($(this).val()) <= 0) {
+                        cantidadesValidas = false;
+                        $(this).addClass('is-invalid');
+                        return false;
+                    }
+                });
+
+                if (!cantidadesValidas) {
+                    alertify.alert('Error', 'Todas las cantidades deben ser mayores a cero');
+                    return false;
+                }
+
+                const datos = $(form).serialize();
+
+                const incompleto = $('#pedidoIncompleto').is(':checked');
+                const msg = incompleto ? '¿Registrar entrada marcando como PEDIDO INCOMPLETO?' : '¿Confirmar registro de entrada de almacén?';
+
+                alertify.confirm('Confirmar', msg,
+                    function() {
+                        $('#modalSpiner').modal('show');
+                        $.ajax({
+                            type: "POST",
+                            url: "ajax/almacen-entradas/guardar.php",
+                            data: datos,
+                            success: function(response) {
+                                $('#modalSpiner').modal('hide');
+                                if ((response || '').trim() === 'success') {
+                                    alertify.success('Entrada guardada correctamente.');
+                                    window.location.href = 'almacen-entradas';
+                                } else {
+                                    alertify.error('Error al guardar la entrada: ' + response);
+                                }
+                            },
+                            error: function(xhr) {
+                                $('#modalSpiner').modal('hide');
+                                alertify.error('Error de conexión con el servidor.');
+                                console.error(xhr);
+                            }
+                        });
+                    },
+                    function() {
+                        alertify.error('Operación cancelada');
+                    }
+                );
+
+                return false;
+            }
+        });
     });
 </script>
 

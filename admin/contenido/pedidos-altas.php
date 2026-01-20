@@ -126,11 +126,11 @@ if ($clsConsulta->numrows > 0 && isset($rsAlm[1]['id'])) {
 
                                 <div class="table-responsive mt-3">
                                     <table id="tablaProductos" class="table table-bordered table-striped">
-                                        <thead>
+                                        <thead class="bg-black text-white">
                                             <tr>
-                                                <th>Cantidad</th>
-                                                <th>Producto</th>
-                                                <th class="text-end">Precio</th>
+                                                <th class="text-center">Cantidad</th>
+                                                <th class="text-center">Producto</th>
+                                                <th class="text-center">Precio</th>
                                                 <th class="text-center">Borrar</th>
                                             </tr>
                                         </thead>
@@ -417,46 +417,101 @@ if ($clsConsulta->numrows > 0 && isset($rsAlm[1]['id'])) {
         $('#modalSeleccionVendedor').modal('hide');
     }
 
-    function agregarProducto(id, clave, nombre, precio) {
+    // contenido/pedidos-altas.php  (JS)
+    function agregarProducto(id, clave, nombre, precio, precioMinimo, precioMaximo, p1, p2, p3, p4, p5) {
         if ($("input[name='producto_id[]'][value='" + id + "']").length > 0) {
             alertify.alert('Aviso', 'Este producto ya está en la lista.');
             return;
         }
 
-        const p = parseFloat(precio || 0).toFixed(2);
+        const p = parseFloat(precio || 0);
+        const vMin = parseFloat(precioMinimo || 0);
+        const vMax = parseFloat(precioMaximo || 0);
+
+        // contenido popover (Bootstrap 5) - muestra N/D cuando es 0
+        function fmt(v) {
+            v = parseFloat(v || 0);
+            return (v > 0) ? v.toFixed(2) : 'N/D';
+        }
+
+        const contenidoPopover =
+            '<div class="small">' +
+            '<div class="fw-semibold mb-1">Listas de precios</div>' +
+            '<div class="d-flex justify-content-between"><span>Lista 1</span><span>$ ' + fmt(p1) + '</span></div>' +
+            '<div class="d-flex justify-content-between"><span>Lista 2</span><span>$ ' + fmt(p2) + '</span></div>' +
+            '<div class="d-flex justify-content-between"><span>Lista 3</span><span>$ ' + fmt(p3) + '</span></div>' +
+            '<div class="d-flex justify-content-between"><span>Lista 4</span><span>$ ' + fmt(p4) + '</span></div>' +
+            '<div class="d-flex justify-content-between"><span>Lista 5</span><span>$ ' + fmt(p5) + '</span></div>' +
+            '<hr class="my-2">' +
+            '<div class="d-flex justify-content-between"><span>Mín permitido</span><span>$ ' + (vMin > 0 ? vMin.toFixed(2) : 'N/D') + '</span></div>' +
+            '<div class="d-flex justify-content-between"><span>Máx permitido</span><span>$ ' + (vMax > 0 ? vMax.toFixed(2) : 'N/D') + '</span></div>' +
+            '</div>';
 
         const nuevaFila = `
-        <tr class="fila-producto">
-            <td style="width:120px;">
-                <input type="number"
-                       class="form-control cantidad"
-                       value="1"
-                       min="1"
-                       name="cantidad[]"
-                       required>
-            </td>
-            <td>${nombre}</td>
-            <td style="width:180px;">
-                <input type="number"
-                       class="form-control precio text-end"
-                       value="${p}"
-                       min="${p}"
-                       step="0.01"
-                       name="precio_venta[]"
-                       required>
-            </td>
-            <td class="text-center" style="width:90px;">
-                <input type="hidden" name="producto_id[]" value="${id}">
-                <button type="button" class="btn btn-danger btn-sm btn-eliminar" aria-label="Eliminar">
-                    <i class="fas fa-trash"></i>
+    <tr class="fila-producto">
+        <td style="width:120px;">
+            <input type="number"
+                   class="form-control cantidad"
+                   value="1"
+                   min="1"
+                   name="cantidad[]"
+                   required>
+        </td>
+
+        <td>
+            <div class="d-flex align-items-center justify-content-between gap-2">
+                <div>${nombre}</div>
+                <button type="button"
+                        class="btn btn-outline-secondary btn-sm btn-precios-info"
+                        aria-label="Ver listas de precios"
+                        data-bs-toggle="popover"
+                        data-bs-trigger="hover focus"
+                        data-bs-placement="top"
+                        data-bs-html="true"
+                        data-bs-content="${contenidoPopover.replace(/"/g, '&quot;')}">
+                    <i class="fas fa-circle-info"></i>
                 </button>
-            </td>
-        </tr>`;
+            </div>
+        </td>
+
+        <td style="width:180px;">
+            <input type="number"
+                   class="form-control precio text-end"
+                   value="${p.toFixed(2)}"
+                   min="${vMin}"
+                   max="${vMax}"
+                   step="0.01"
+                   name="precio_venta[]"
+                   required>
+            <div class="invalid-feedback mt-1"></div>
+        </td>
+
+        <td class="text-center" style="width:90px;">
+            <input type="hidden" name="producto_id[]" value="${id}">
+            <button type="button" class="btn btn-danger btn-sm btn-eliminar" aria-label="Eliminar">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    </tr>`;
 
         $('#tbodyProductos').append(nuevaFila);
         actualizarMensajeTablaVacia();
         FnCerrarModal();
+
+        // Inicializa popover SOLO del último agregado (Bootstrap 5)
+        const lastInfoBtn = document.querySelector('#tbodyProductos tr.fila-producto:last-child .btn-precios-info');
+        if (lastInfoBtn && typeof bootstrap !== 'undefined' && bootstrap.Popover) {
+            new bootstrap.Popover(lastInfoBtn, {
+                container: 'body'
+            });
+        }
     }
+
+    // contenido/pedidos-altas.php  (JS dentro de document.ready)
+    $('body').on('shown.bs.modal', '#modalAddProductos', function() {
+        // no hace nada, solo evita que Safari “pierda” focus con popovers (compat)
+    });
+
 
     function guardarPedido(form) {
         if (isSavingPedido) return;
@@ -543,6 +598,81 @@ if ($clsConsulta->numrows > 0 && isset($rsAlm[1]['id'])) {
             actualizarMensajeTablaVacia();
         });
 
+        // Validar antes de guardar el pedido
+        $('#formPedidos').on('submit', function(e) {
+            let invalidPrices = false;
+            let invalidProducts = [];
+
+            // Verificar todos los productos del pedido
+            $('#tbodyProductos .fila-producto').each(function() {
+                const $row = $(this);
+                const precioMinimo = parseFloat($row.find('.precio').attr('min')) || 0;
+                const precioMaximo = parseFloat($row.find('.precio').attr('max')) || 0;
+                const precioActual = parseFloat($row.find('.precio').val()) || 0;
+
+                // Verificar si el precio es menor al mínimo o mayor al máximo
+                if (precioActual < precioMinimo || precioActual > precioMaximo) {
+                    invalidPrices = true;
+                    const productName = $row.find('td:eq(1)').text().trim();
+                    invalidProducts.push(productName);
+                }
+            });
+
+            // Si hay productos con precios inválidos, mostrar un mensaje de advertencia y evitar que el pedido se guarde
+            if (invalidPrices) {
+                let message = 'Los siguientes productos tienen precios fuera del rango permitido:\n\n';
+                invalidProducts.forEach(product => {
+                    message += `- ${product}\n`;
+                });
+                message += '\nPor favor, corrige los precios antes de guardar el pedido.';
+
+                // Mostrar mensaje de advertencia
+                alertify.alert('Aviso', message);
+
+                // Evitar que el formulario se envíe
+                e.preventDefault();
+            }
+        });
+
+        // Agregar icono de info con popover para mostrar listas de precios
+        $('#tbodyProductos').on('mouseenter', '.btn-info', function() {
+            const $button = $(this);
+            const $row = $button.closest('tr');
+            const precios = {
+                lista1: parseFloat($row.find('.precio1').text()) || 0,
+                lista2: parseFloat($row.find('.precio2').text()) || 0,
+                lista3: parseFloat($row.find('.precio3').text()) || 0,
+                lista4: parseFloat($row.find('.precio4').text()) || 0,
+                lista5: parseFloat($row.find('.precio5').text()) || 0
+            };
+
+            // Crear el contenido del popover
+            let popoverContent = `
+            <strong>Precios de listas:</strong><br>
+            Lista 1: ${precios.lista1 > 0 ? precios.lista1.toFixed(2) : 'No disponible'}<br>
+            Lista 2: ${precios.lista2 > 0 ? precios.lista2.toFixed(2) : 'No disponible'}<br>
+            Lista 3: ${precios.lista3 > 0 ? precios.lista3.toFixed(2) : 'No disponible'}<br>
+            Lista 4: ${precios.lista4 > 0 ? precios.lista4.toFixed(2) : 'No disponible'}<br>
+            Lista 5: ${precios.lista5 > 0 ? precios.lista5.toFixed(2) : 'No disponible'}
+        `;
+
+            // Inicializar el popover si no está ya iniciado
+            if (!$button.attr('data-bs-toggle')) {
+                $button.attr('data-bs-toggle', 'popover');
+                $button.attr('data-bs-content', popoverContent);
+                new bootstrap.Popover($button[0]);
+            }
+
+            // Mostrar el popover
+            $button.popover('show');
+        });
+
+        // Cerrar popover cuando se sale del icono
+        $('#tbodyProductos').on('mouseleave', '.btn-info', function() {
+            const $button = $(this);
+            $button.popover('hide');
+        });
+
         // DataTable Productos (SERVER-SIDE real)
         const dtProd = $('#TableListaProductos').DataTable({
             serverSide: true,
@@ -622,15 +752,28 @@ if ($clsConsulta->numrows > 0 && isset($rsAlm[1]['id'])) {
             dtVend.search($(this).val()).draw();
         });
 
-        // Validar precio mínimo (no toast)
+        // Validar precio mínimo y máximo al modificar el precio
         $('#tbodyProductos').on('change', '.precio', function() {
             const $input = $(this);
-            const precioMinimo = parseFloat($input.attr('min')) || 0;
+            const precioMinimo = parseFloat($input.attr('min')) || 0; // Precio mínimo desde el atributo
+            const precioMaximo = parseFloat($input.attr('max')) || 0; // Precio máximo desde el atributo
             const precioActual = parseFloat($input.val()) || 0;
 
+            // Eliminar mensaje de error en rojo si el valor es válido
+            $('#errorPrecio').hide(); // Aseguramos que el mensaje de error desaparezca si el precio es válido
+
             if (precioActual < precioMinimo) {
-                $input.val(precioMinimo.toFixed(2)).focus();
-                alertify.alert('Aviso', 'El precio no puede ser menor a ' + precioMinimo.toFixed(2));
+                // Mostrar mensaje de error en rojo cuando el precio es menor al mínimo
+                $input.addClass('is-invalid'); // Añadir clase 'is-invalid' al campo para el estilo visual
+                $('#errorPrecio').text(`El precio no puede ser menor a ${precioMinimo.toFixed(2)}`).show(); // Mostrar el mensaje en rojo
+            } else if (precioActual > precioMaximo) {
+                // Mostrar mensaje de error si el precio es mayor al máximo
+                $input.addClass('is-invalid');
+                $('#errorPrecio').text(`El precio no puede ser mayor a ${precioMaximo.toFixed(2)}`).show(); // Mostrar el mensaje en rojo
+            } else {
+                // Si el precio es válido, quitar la clase 'is-invalid' y ocultar el mensaje de error
+                $input.removeClass('is-invalid');
+                $('#errorPrecio').hide();
             }
         });
 

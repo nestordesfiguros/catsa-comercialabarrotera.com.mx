@@ -9,7 +9,7 @@ $clsConsulta = new Consultas();
 // Empresa (desde sesión)
 $idEmpresa = 0;
 if (isset($_SESSION['id_empresa'])) $idEmpresa = (int)$_SESSION['id_empresa'];
-elseif (isset($_SESSION['empresa'])) $idEmpresa = (int)$_SESSION['empresa'];
+
 
 $draw   = isset($_POST['draw']) ? (int)$_POST['draw'] : 0;
 $start  = isset($_POST['start']) ? (int)$_POST['start'] : 0;

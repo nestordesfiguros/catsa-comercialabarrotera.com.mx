@@ -3,10 +3,9 @@
 // Requiere: $clsConsulta ya inicializado en tu layout/controller
 // Requiere sesión activa
 
-// Empresa: soporte para sesiones existentes (id_empresa o empresa)
+// Empresa: soporte para sesiones existentes (id_empresa)
 $idEmpresa = 0;
 if (isset($_SESSION['id_empresa'])) $idEmpresa = (int)$_SESSION['id_empresa'];
-elseif (isset($_SESSION['empresa'])) $idEmpresa = (int)$_SESSION['empresa'];
 
 $whereEmpresa = "";
 if ($idEmpresa > 0) {
@@ -46,7 +45,7 @@ $almacenDefaultId = 0;
 $sqlAlm = "SELECT id, almacen
            FROM cat_almacenes
            WHERE estatus = 1 AND id_empresa = {$idEmpresa}
-           ORDER BY almacen ASC";
+           ORDER BY almacen DESC";
 $rsAlm = $clsConsulta->consultaGeneral($sqlAlm);
 if ($clsConsulta->numrows > 0) {
     $primero = true;

@@ -2,9 +2,10 @@
 // admin/ajax/productos/tabla-productos.php
 session_start();
 include '../../lib/clsConsultas.php';
-header('Content-Type: application/json');
+//header('Content-Type: application/json');
 
 $clsConsulta = new Consultas();
+
 
 function safe_html($value)
 {
@@ -12,9 +13,8 @@ function safe_html($value)
 }
 
 // Empresa actual
-$idEmpresa = 0;
-if (isset($_SESSION['id_empresa'])) $idEmpresa = (int)$_SESSION['id_empresa'];
-elseif (isset($_SESSION['empresa'])) $idEmpresa = (int)$_SESSION['empresa'];
+$idEmpresa = ((int)$_SESSION['id_empresa']) ?  (int)$_SESSION['id_empresa'] : 0;
+
 
 $whereEmpresa = "";
 if ($idEmpresa > 0) {
@@ -90,12 +90,15 @@ if ($clsConsulta->numrows > 0) {
     $recordsTotal = (int)$rsTotal[1]['total'];
 }
 
+
 // Filtrado
 $sqlFiltered = "SELECT COUNT(*) AS total
 FROM cat_productos p
 INNER JOIN cat_almacenes a ON a.id = p.id_almacen
 {$whereBase}
 {$searchSql}";
+
+
 $rsFiltered = $clsConsulta->consultaGeneral($sqlFiltered);
 $recordsFiltered = 0;
 if ($clsConsulta->numrows > 0) {

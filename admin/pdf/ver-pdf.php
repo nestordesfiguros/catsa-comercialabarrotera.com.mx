@@ -1,124 +1,132 @@
 <?php
+// admin/pdf/ver-pdf.php
+
+ob_start(); // evita que warnings/espacios rompan la salida del PDF
+
+session_start();
 include '../lib/clsConsultas.php';
 $clsConsulta = new Consultas();
 
-setlocale(LC_TIME, 'es_MX.UTF-8'); // Para español de México
-
-// Incluir el autoloader de Composer
+// Composer autoload
 require '../vendor/autoload.php';
-$id = $_GET['id'];
-$idp = $_GET['idp'];
 
-// Crear una instancia de mPDF
-$mpdf = new \Mpdf\Mpdf();
+// IDs (evitar strings)
+$idOrden = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$idProveedor = isset($_GET['idp']) ? (int)$_GET['idp'] : 0;
 
+// Empresa desde sesión (multiempresa)
+$idEmpresa = isset($_SESSION['id_empresa']) ? (int)$_SESSION['id_empresa'] : 0;
+
+if ($idOrden <= 0 || $idProveedor <= 0 || $idEmpresa <= 0) {
+    ob_end_clean();
+    exit('error');
+}
+
+// mPDF (solo una instancia)
 $mpdf = new \Mpdf\Mpdf([
-    'default_font' => 'arial',  // Definir Arial como fuente por defecto
+    'default_font' => 'arial'
 ]);
 
-// Leer el archivo HTML
+// Estilos
 $html = '';
-
-// Estilos CSS para la tabla
 $html .= '<style>
-    body {
-        font-family: Arial, sans-serif;      
-        font-size: 8px;    
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-        font-size: 8px;
-    }
-    table th, table td {
-        padding: 8px 12px;
-        text-align: center;
-        border: 1px solid #ddd;
-    }
-    table th {
-        background-color:#0e0e0e;
-        color: #fff;
-        font-weight: bold;
-    }
-    table td {
-        font-size: 8px;
-    }
-    table .text-end {
-        text-align: right;
-    }
-    table .text-start{
-         text-align: left;
-    }
-    img{
-        width:200px;
-    }
-    table .borderNo{
-        border:none
-    }
+    body { font-family: Arial, sans-serif; font-size: 8px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 8px; }
+    table th, table td { padding: 8px 12px; text-align: center; border: 1px solid #ddd; }
+    table th { background-color:#0e0e0e; color: #fff; font-weight: bold; }
+    table td { font-size: 8px; }
+    .text-end { text-align: right; }
+    .text-start { text-align: left; }
+    img { width:200px; }
+    .borderNo { border:none; }
 </style>';
 
-$con = "SELECT
-    estados.nombre AS nestado
-    , municipios.nombre AS nmunicipio
-    , cat_proveedores.razon_social
-    , cat_proveedores.nombre_comercial
-    , cat_proveedores.calle
-    , cat_proveedores.num_ext
-    , cat_proveedores.num_int
-    , cat_proveedores.colonia
-    , cat_proveedores.cp
-FROM
-    cat_proveedores
-    INNER JOIN estados 
-        ON (cat_proveedores.id_estado = estados.id)
-    INNER JOIN municipios 
-        ON (cat_proveedores.id_municipio = municipios.id) 
-    WHERE cat_proveedores.id=" . $idp;
-$res = $clsConsulta->consultaGeneral($con);
-foreach ($res as $v => $val) {
-    $razonSocialP = $val['razon_social'];
-    $calleP = strtoupper($val['calle'] . ' ' . $val['num_ext'] . ' ' . $val['num_int']);
-    $domicilioP = strtoupper($val['cp'] . ' ' . $val['colonia'] . ' ' . $val['nmunicipio'] . ' ' . $val['nestado']);
-    $tel1P = ($val['tel1'] != '') ? $val['tel1'] : '';
+// ==============================
+// PROVEEDOR
+// ==============================
+$razonSocialP = '';
+$calleP = '';
+$domicilioP = '';
+$telP = '';
+
+$sqlProv = "
+    SELECT
+        e.nombre AS nestado,
+        m.nombre AS nmunicipio,
+        p.razon_social,
+        p.nombre_Comercial,
+        p.calle,
+        p.num_ext,
+        p.num_int,
+        p.colonia,
+        p.cp,
+        p.tel AS telP
+    FROM cat_proveedores p
+    INNER JOIN estados e ON (p.id_estado = e.id)
+    INNER JOIN municipios m ON (p.id_municipio = m.id)
+    WHERE p.id={$idProveedor}
+    LIMIT 1
+";
+$resProv = $clsConsulta->consultaGeneral($sqlProv);
+if ($clsConsulta->numrows > 0) {
+    $val = $resProv[1];
+    $ncomercial = ($val['nombre_Comercial'] != '') ? $val['nombre_Comercial'] : '';
+    $rsocialP = ($val['razon_social'] != '') ? ' <br> ( ' . $val['razon_social'] . ' )' : '';
+    $razonSocialP = $ncomercial . $rsocialP;
+    $calleP = strtoupper(trim($val['calle'] . ' ' . $val['num_ext'] . ' ' . $val['num_int']));
+    $domicilioP = strtoupper(trim($val['cp'] . ' ' . $val['colonia'] . ' ' . $val['nmunicipio'] . ' ' . $val['nestado']));
+    $telP = ($val['telP'] != '') ? $val['telP'] : '';
 }
 
-$query = "SELECT
-    empresa.id
-    , empresa.razon_social
-    , empresa.calle
-    , empresa.num_ext
-    , empresa.num_int
-    , empresa.cp
-    , empresa.colonia
-    , empresa.tel1
-    , empresa.tel2
-    , empresa.tel3
-    , estados.nombre AS nestado
-    , municipios.nombre AS nmunicipio
-FROM
-    empresa
-    INNER JOIN estados 
-        ON (empresa.id_estado = estados.id)
-    INNER JOIN municipios 
-        ON (empresa.id_municipio = municipios.id) WHERE empresa.id=" . $idp;
-$res = $clsConsulta->consultaGeneral($query);
-foreach ($res as $v => $val) {
+// ==============================
+// EMPRESA
+// ==============================
+$razonSocial = '';
+$calle = '';
+$domicilio = '';
+$tel1 = '';
+$tel2 = '';
+$tel3 = '';
+
+$sqlEmp = "
+    SELECT
+        emp.id,
+        emp.razon_social,
+        emp.calle,
+        emp.num_ext,
+        emp.num_int,
+        emp.cp,
+        emp.colonia,
+        emp.tel1,
+        emp.tel2,
+        emp.tel3,
+        e.nombre AS nestado,
+        m.nombre AS nmunicipio
+    FROM empresa emp
+    INNER JOIN estados e ON (emp.id_estado = e.id)
+    INNER JOIN municipios m ON (emp.id_municipio = m.id)
+    WHERE emp.id={$idEmpresa}
+    LIMIT 1
+";
+$resEmp = $clsConsulta->consultaGeneral($sqlEmp);
+if ($clsConsulta->numrows > 0) {
+    $val = $resEmp[1];
     $razonSocial = $val['razon_social'];
-    $calle = strtoupper($val['calle'] . ' ' . $val['num_ext'] . ' ' . $val['num_int']);
-    $domicilio = strtoupper($val['cp'] . ' ' . $val['colonia'] . ' ' . $val['nmunicipio'] . ' ' . $val['nestado']);
+    $calle = strtoupper(trim($val['calle'] . ' ' . $val['num_ext'] . ' ' . $val['num_int']));
+    $domicilio = strtoupper(trim($val['cp'] . ' ' . $val['colonia'] . ' ' . $val['nmunicipio'] . ' ' . $val['nestado']));
     $tel1 = ($val['tel1'] != '') ? $val['tel1'] : '';
-    // $tel2 = ($val['tel2'] != '') ? $val['tel2'] : '';
-    // $tel3 = ($val['tel3'] != '') ? $val['tel3'] : '';
+    $tel2 = ($val['tel2'] != '') ? $val['tel2'] : '';
+    $tel3 = ($val['tel3'] != '') ? $val['tel3'] : '';
 }
 
-// Establecer la localización en español de México
-setlocale(LC_TIME, 'es_MX.UTF-8');
-
-$con = "SELECT * FROM cab_compras WHERE id=" . $id;
-$res = $clsConsulta->consultaGeneral($con);
-foreach ($res as $v => $val) {
-    $fecha = $val['fecha'];
+// ==============================
+// CABECERA ORDEN (fecha)
+// ==============================
+$fechaLarga = '';
+$sqlCab = "SELECT fecha FROM cab_compras WHERE id={$idOrden} AND id_empresa={$idEmpresa} LIMIT 1";
+$resCab = $clsConsulta->consultaGeneral($sqlCab);
+if ($clsConsulta->numrows > 0) {
+    $fecha = $resCab[1]['fecha'];
     $date = new DateTime($fecha);
 
     $fmt = new IntlDateFormatter(
@@ -132,39 +140,41 @@ foreach ($res as $v => $val) {
     $fechaLarga = $fmt->format($date);
 }
 
-// Ajustar el margen superior para evitar la superposición
+// Margen superior para header
 $mpdf->SetTopMargin(45);
 
-$htmlHeader = '<table >
+$htmlHeader = '
+<table>
     <tr class="borderNo">
         <td class="borderNo">
-            <table >         
+            <table>
                 <tr class="borderNo">
-                    <td class="text-start borderNo"><img src="../img/logo-inicio.png" /></td>                    
+                    <td class="text-start borderNo"><img src="../img/logo-inicio.png" /></td>
                 </tr>
-                <tr class="borderNo">                    
+                <tr class="borderNo">
                     <td class="text-start borderNo">
-                    ' . $razonSocial . ' <br/>
-                    ' . $calle . ' <br>
-                    ' . $domicilio . ' <br>
-                    ' . $tel . ' ' . $tel2 . ' ' . $tel3 . '
+                        ' . $razonSocial . ' <br/>
+                        ' . $calle . ' <br/>
+                        ' . $domicilio . ' <br/>
+                        ' . $tel1 . ' ' . $tel2 . ' ' . $tel3 . '
                     </td>
                 </tr>
             </table>
         </td>
+
         <td class="text-end borderNo">
-            <table > 
-                <tr class="borderNo"> 
+            <table>
+                <tr class="borderNo">
                     <td class="borderNo text-end">
-                    <h2> Órden de Compra No. ' . $id . ' </h2> <br>
-                    <h4>' . $fechaLarga . ' </h4>
-                    <br/>
-                    ' . $razonSocialP . ' <br/>
-                    ' . $calleP . ' <br>
-                    ' . $domicilioP . ' <br>
-                    ' . $telP . '
+                        <h2>Órden de Compra No. ' . $idOrden . '</h2>
+                        <h4>' . $fechaLarga . '</h4>
+                        <br/>
+                        ' . $razonSocialP . ' <br/>
+                        ' . $calleP . ' <br/>
+                        ' . $domicilioP . ' <br/>
+                        ' . $telP . '
                     </td>
-                </tr>            
+                </tr>
             </table>
         </td>
     </tr>
@@ -172,21 +182,20 @@ $htmlHeader = '<table >
 
 $mpdf->SetHTMLHeader($htmlHeader);
 
-// Consulta para obtener los datos de la orden de compra
-$con = "SELECT
-    mov_compras.cantidad
-    , mov_compras.precio
-    , cat_productos.clave
-    , cat_productos.nombre
-FROM
-    mov_compras
-    INNER JOIN cat_productos 
-        ON (mov_compras.id_producto = cat_productos.id_producto)
-        WHERE mov_compras.id_orden_compra = " . $id;
-
-$rs = $clsConsulta->consultaGeneral($con);
-
-// Crear la tabla HTML con los datos obtenidos
+// ==============================
+// DETALLE
+// ==============================
+$sqlDet = "
+    SELECT
+        m.cantidad,
+        m.precio,
+        p.clave,
+        p.nombre
+    FROM mov_compras m
+    INNER JOIN cat_productos p ON (m.id_producto = p.id_producto)
+    WHERE m.id_orden_compra={$idOrden}
+";
+$rs = $clsConsulta->consultaGeneral($sqlDet);
 
 $html .= '<table id="table">
 <thead>
@@ -202,34 +211,35 @@ $html .= '<table id="table">
 
 if ($clsConsulta->numrows > 0) {
     foreach ($rs as $v => $val) {
+        $cantidad = (float)$val['cantidad'];
+        $precio = (float)$val['precio'];
+        $total = $cantidad * $precio;
+
         $html .= '<tr>';
         $html .= '<td>' . $val['cantidad'] . '</td>';
         $html .= '<td class="text-start">' . $val['clave'] . '</td>';
         $html .= '<td class="text-start">' . $val['nombre'] . '</td>';
-        $html .= '<td class="text-end">$' . number_format($val['precio'], 2, ".", ",") . '</td>';
-        $total = $val['cantidad'] * $val['precio'];
+        $html .= '<td class="text-end">$' . number_format($precio, 2, ".", ",") . '</td>';
         $html .= '<td class="text-end">$' . number_format($total, 2, ".", ",") . '</td>';
         $html .= '</tr>';
     }
 }
 
-$html .= '</tbody>
-</table>';
+$html .= '</tbody></table>';
 
 $html .= '<table>
-        <tr class="borderNo">
-            <td class="borderNo">Autorizado Por: _______________________________________</td>
-            <td class="borderNo">Fecha Autorización: _________________________________</td>
-        </tr>
-    </table>';
+    <tr class="borderNo">
+        <td class="borderNo">Autorizado Por: _______________________________________</td>
+        <td class="borderNo">Fecha Autorización: _________________________________</td>
+    </tr>
+</table>';
 
-// Establecer márgenes (izquierdo, derecho, superior)
+// Márgenes
 $mpdf->SetMargins(5, 5, 50, 45);
-// Escribir el HTML en el PDF
+
+// Limpiar buffer por seguridad antes de enviar PDF
+ob_end_clean();
+
+// Render PDF
 $mpdf->WriteHTML($html);
-
-// Generar el archivo PDF (puedes cambiar 'documento.pdf' por el nombre que prefieras)
-$mpdf->Output('documento.pdf', 'I'); // 'I' para mostrar el PDF en el navegador
-
-// Si prefieres guardarlo en el servidor, usa 'D' para forzar la descarga:
-// $mpdf->Output('documento.pdf', 'D');
+$mpdf->Output('documento.pdf', 'I');

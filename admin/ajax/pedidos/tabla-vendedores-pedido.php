@@ -26,7 +26,7 @@ if ($idEmpresa <= 0) {
     exit;
 }
 
-$whereBase = "estatus = 1 AND id_empresa = {$idEmpresa}";
+$whereBase = "estatus = 1"; // AND id_empresa = {$idEmpresa}";
 $whereSearch = "";
 if ($searchValue !== '') {
     $sv = addslashes($searchValue);

@@ -1,5 +1,5 @@
 <?php
-// ajax/pedidos/tabla-productos-pedido.php
+// admin/ajax/pedidos/tabla-productos-pedido.php
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 
@@ -88,7 +88,7 @@ switch ($orderColIdx) {
         break;
 }
 
-// ✅ CAMINO 1: catálogo por almacén (solo productos del almacén seleccionado)
+// catálogo por almacén
 $whereBase = "
     p.estatus = 1
     AND p.id_almacen = {$idAlmacen}
@@ -113,7 +113,7 @@ if ($whereSearch !== '') {
     $recordsFiltered = (int)($rf[1]['c'] ?? 0);
 }
 
-// existencia disponible por almacén seleccionado (inventarios - reservas vigentes)
+// existencia disponible (inventarios - reservas)
 $sql = "
     SELECT
         p.id_producto,
@@ -123,7 +123,12 @@ $sql = "
         IFNULL(inv.cantidad, 0) AS inv_total,
         IFNULL(res.reservado, 0) AS reservado,
         (IFNULL(inv.cantidad, 0) - IFNULL(res.reservado, 0)) AS existencia,
-        IFNULL(p.{$precioCol}, 0) AS precio_lista
+        IFNULL(p.{$precioCol}, 0) AS precio_lista,
+        IFNULL(p.precio01, 0) AS precio_lista1,
+        IFNULL(p.precio02, 0) AS precio_lista2,
+        IFNULL(p.precio03, 0) AS precio_lista3,
+        IFNULL(p.precio04, 0) AS precio_lista4,
+        IFNULL(p.precio05, 0) AS precio_lista5
     FROM cat_productos p
     LEFT JOIN (
         SELECT id_producto, SUM(cantidad) AS cantidad
@@ -161,6 +166,23 @@ if (is_array($rs) && $clsConsulta->numrows > 0) {
         $precioLista = (float)($val['precio_lista'] ?? 0);
         $imagen      = (string)($val['imagen'] ?? '');
 
+        $p1 = (float)($val['precio_lista1'] ?? 0);
+        $p2 = (float)($val['precio_lista2'] ?? 0);
+        $p3 = (float)($val['precio_lista3'] ?? 0);
+        $p4 = (float)($val['precio_lista4'] ?? 0);
+        $p5 = (float)($val['precio_lista5'] ?? 0);
+
+        // min/max ignorando ceros
+        $preciosValidos = [];
+        if ($p1 > 0) $preciosValidos[] = $p1;
+        if ($p2 > 0) $preciosValidos[] = $p2;
+        if ($p3 > 0) $preciosValidos[] = $p3;
+        if ($p4 > 0) $preciosValidos[] = $p4;
+        if ($p5 > 0) $preciosValidos[] = $p5;
+
+        $precioMinimo = (count($preciosValidos) > 0) ? min($preciosValidos) : 0;
+        $precioMaximo = (count($preciosValidos) > 0) ? max($preciosValidos) : 0;
+
         $foto = '<div class="text-center"><i class="fas fa-image fa-lg text-muted"></i></div>';
         if ($imagen !== '') {
             $imgEsc = htmlspecialchars($imagen, ENT_QUOTES, 'UTF-8');
@@ -176,11 +198,19 @@ if (is_array($rs) && $clsConsulta->numrows > 0) {
 
         if ($existencia > 0) {
             $btn = '<div class="text-center">
-                        <button type="button" class="btn btn-sm btn-primary"
-                            onclick="agregarProducto(' . $idProducto . ', \'' . addslashes($clave) . '\', \'' . addslashes($nombre) . '\', ' . $precioLista . ');">
-                            Agregar
-                        </button>
-                    </div>';
+                <button type="button" class="btn btn-sm btn-primary"
+                    onclick="agregarProducto('
+                . $idProducto . ', '
+                . '\'' . addslashes($clave) . '\', '
+                . '\'' . addslashes($nombre) . '\', '
+                . $precioLista . ', '
+                . $precioMinimo . ', '
+                . $precioMaximo . ', '
+                . $p1 . ', ' . $p2 . ', ' . $p3 . ', ' . $p4 . ', ' . $p5 .
+                ');">
+                    Agregar
+                </button>
+            </div>';
         } else {
             $btn = '<div class="text-center">
                         <button type="button" class="btn btn-sm btn-secondary" disabled>Sin existencia</button>

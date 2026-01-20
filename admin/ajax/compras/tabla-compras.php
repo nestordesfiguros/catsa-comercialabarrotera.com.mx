@@ -38,7 +38,7 @@ if ($clsConsulta->numrows > 0 && is_array($rs)) {
 
         $id     = '<div class="text-end">' . (int)$val['id'] . '</div>';
         $fecha  = '<div class="text-center">' . htmlspecialchars($val['fecha']) . '</div>';
-        $rz     = '<div>' . htmlspecialchars($val['razon_social']) . ' / ' . htmlspecialchars($val['nombre_Comercial']) . '</div>';
+        $rz     = '<div>' . htmlspecialchars($val['nombre_Comercial']) . ' / ' . htmlspecialchars($val['razon_social']) .  '</div>';
 
         $totalCalc = (float)$val['total_calculado'];
         $total = '<div class="text-end">$' . number_format($totalCalc, 2, ".", ",") . '</div>';
