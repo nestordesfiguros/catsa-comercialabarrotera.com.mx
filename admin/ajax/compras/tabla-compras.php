@@ -45,8 +45,9 @@ if ($clsConsulta->numrows > 0 && is_array($rs)) {
 
         $valores = (int)$val['id'] . ", '" . addslashes($val['fecha']) . "', '" . addslashes($val['razon_social'] . ' / ' . $val['nombre_Comercial']) . "', '" . number_format($totalCalc, 2, ".", ",") . "'";
 
+        // OJO: se cambió detalle() -> fnDetalleCompra() para evitar colisión con id="detalle"
         $documento = '<div class="text-center">
-                <i class="far fa-list-alt fa-lg text-info" onclick="detalle(' . $valores . ');" data-bs-toggle="modal" data-bs-target="#detalleModal" style="cursor:pointer"></i>
+                <i class="far fa-list-alt fa-lg text-info" onclick="fnDetalleCompra(' . $valores . ');" data-bs-toggle="modal" data-bs-target="#detalleModal" style="cursor:pointer"></i>
               </div>';
 
         $pdf = '<div class="text-center"><a href="pdf/ver-pdf.php?id=' . (int)$val['id'] . '&idp=' . $idProveedor . '" target="_blank"><i class="fas fa-file-pdf fa-lg text-danger"></i></a></div>';

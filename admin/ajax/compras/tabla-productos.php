@@ -6,7 +6,8 @@ $clsConsulta = new Consultas();
 
 header('Content-Type: application/json; charset=utf-8');
 
-$idEmpresa = isset($_SESSION['id_empresa']) ? (int)$_SESSION['id_empresa'] : 0;
+$idEmpresa   = isset($_SESSION['id_empresa']) ? (int)$_SESSION['id_empresa'] : 0;
+$idProveedor = isset($_POST['id_proveedor']) ? (int)$_POST['id_proveedor'] : 0;
 
 $draw   = isset($_POST['draw']) ? (int)$_POST['draw'] : 0;
 $start  = isset($_POST['start']) ? (int)$_POST['start'] : 0;
@@ -26,9 +27,11 @@ if (isset($_POST['order'][0]['dir']) && in_array(strtoupper($_POST['order'][0]['
     $orderDir = strtoupper($_POST['order'][0]['dir']);
 }
 
+// OJO: columnas del DataTable (sin columna de Acción)
 $columns = [
     0 => 'clave',
-    1 => 'nombre'
+    1 => 'nombre',
+    2 => 'ultimo_precio'
 ];
 $orderBy = isset($columns[$orderCol]) ? $columns[$orderCol] : 'nombre';
 
@@ -77,14 +80,33 @@ if ($clsConsulta->numrows > 0) {
     $recordsFiltered = (int)$rsFiltered[1]['total'];
 }
 
-// Data
+// Subquery último precio: si hay proveedor seleccionado, filtra por proveedor
+$whereProveedor = "";
+if ($idProveedor > 0) {
+    $whereProveedor = " AND c2.id_proveedor={$idProveedor} ";
+}
+
 $sqlData = "
-    SELECT id_producto, clave, nombre
-    FROM cat_productos
+    SELECT 
+        p.id_producto,
+        p.clave,
+        p.nombre,
+        (
+            SELECT m2.precio
+            FROM mov_compras m2
+            INNER JOIN cab_compras c2 ON c2.id = m2.id_orden_compra
+            WHERE c2.id_empresa={$idEmpresa}
+              AND m2.id_producto = p.id_producto
+              {$whereProveedor}
+            ORDER BY c2.id DESC
+            LIMIT 1
+        ) AS ultimo_precio
+    FROM cat_productos p
     {$where}
     ORDER BY {$orderBy} {$orderDir}
     LIMIT {$start}, {$length}
 ";
+
 $rsData = $clsConsulta->consultaGeneral($sqlData);
 
 $data = [];
@@ -93,7 +115,8 @@ if ($clsConsulta->numrows > 0) {
         $data[] = [
             'id_producto' => (int)$val['id_producto'],
             'clave' => $val['clave'],
-            'nombre' => $val['nombre']
+            'nombre' => $val['nombre'],
+            'ultimo_precio' => $val['ultimo_precio'] // puede venir NULL
         ];
     }
 }

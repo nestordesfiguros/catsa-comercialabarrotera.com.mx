@@ -34,15 +34,29 @@
                                         </div>
                                     </div>
 
+                                    <!-- PROVEEDOR (SOLO MODAL) -->
                                     <div class="col-12 col-md-8">
-                                        <div class="form-floating">
-                                            <input type="text" id="clienteInput" class="form-control" name="cliente_nombre" list="clientes"
-                                                placeholder="Selecciona un proveedor..." autocomplete="off" />
-                                            <label for="clienteInput">Selecciona un proveedor</label>
+                                        <div class="input-group">
+                                            <div class="form-floating flex-grow-1">
+                                                <input type="text"
+                                                    id="clienteInput"
+                                                    class="form-control"
+                                                    name="cliente_nombre"
+                                                    placeholder="Selecciona un proveedor..."
+                                                    autocomplete="off"
+                                                    readonly />
+                                                <label for="clienteInput">Selecciona un proveedor</label>
+                                            </div>
+                                            <button type="button"
+                                                class="btn btn-outline-primary"
+                                                id="btnOpenProveedor"
+                                                title="Seleccionar proveedor"
+                                                onclick="FnAbrirModalProveedor();">
+                                                <i class="fa-solid fa-truck-field"></i>
+                                            </button>
                                         </div>
 
                                         <div id="errorCliente" class="invalid-feedback mt-2" style="display:none;"></div>
-                                        <datalist id="clientes"></datalist>
                                     </div>
 
                                     <div class="col-12 col-md-2 d-flex align-items-center justify-content-md-end">
@@ -95,7 +109,7 @@
     </div>
 </section>
 
-<!-- Modal -->
+<!-- Modal Productos -->
 <div class="modal fade" id="modalAddProductos" tabindex="-1" aria-labelledby="modalAddProductosLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
@@ -122,6 +136,46 @@
                             <tr>
                                 <th style="width:160px;">Clave</th>
                                 <th>Producto</th>
+                                <th class="text-end" style="width:170px;">Último precio</th>
+                                <th class="text-center" style="width:120px;">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Proveedores -->
+<div class="modal fade" id="modalProveedores" tabindex="-1" aria-labelledby="modalProveedoresLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalProveedoresLabel">Proveedores</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="FnCerrarModalProveedor();"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="mb-3">
+                    <div class="row justify-content-end g-2">
+                        <div class="col-12 col-md-6">
+                            <div class="form-floating">
+                                <input type="text" id="searchProveedor" class="form-control" placeholder="Buscar">
+                                <label for="searchProveedor">Buscar</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="TableListaProveedores" class="table table-bordered table-striped w-100">
+                        <thead>
+                            <tr>
+                                <th>Proveedor</th>
+                                <th>Razón social</th>
                                 <th class="text-center" style="width:120px;">Acción</th>
                             </tr>
                         </thead>
@@ -136,7 +190,7 @@
 
 <script>
     // =============================================
-    // MODAL
+    // MODAL PRODUCTOS
     // =============================================
     function FnAgregarModal() {
         $('#modalAddProductos').modal('show');
@@ -147,6 +201,23 @@
 
     function FnCerrarModal() {
         $('#modalAddProductos').modal('hide');
+    }
+
+    // =============================================
+    // MODAL PROVEEDORES
+    // =============================================
+    function FnAbrirModalProveedor() {
+        $('#modalProveedores').modal('show');
+        if (window.tablaProveedoresModal) {
+            window.tablaProveedoresModal.ajax.reload();
+        }
+        setTimeout(function() {
+            $('#searchProveedor').trigger('focus');
+        }, 200);
+    }
+
+    function FnCerrarModalProveedor() {
+        $('#modalProveedores').modal('hide');
     }
 
     // =============================================
@@ -166,32 +237,38 @@
     }
 
     // =============================================
-    // PROVEEDORES (ENDPOINT)
+    // UI BLOCK (usa tu modal #modalSpiner)
     // =============================================
-    let proveedoresMap = {}; // nombre -> id
-
-    function cargarProveedores() {
-        $.ajax({
-            url: 'ajax/compras/proveedores.php',
-            method: 'POST',
-            dataType: 'json',
-            success: function(res) {
-                const $dl = $('#clientes');
-                $dl.empty();
-                proveedoresMap = {};
-
-                if (res && res.success && Array.isArray(res.data)) {
-                    res.data.forEach(function(p) {
-                        proveedoresMap[p.nombre] = p.id;
-                        $dl.append(`<option value="${escapeHtml(p.nombre)}"></option>`);
-                    });
-                }
-            },
-            error: function() {
-                // no romper la UX si falla
+    function uiBlock(on) {
+        if (on) {
+            if ($('#modalSpiner').length) {
+                $('#modalSpiner').modal({
+                    backdrop: 'static',
+                    keyboard: false
+                });
+                $('#modalSpiner').modal('show');
             }
-        });
+            $('body').addClass('pe-none');
+            $('#modalSpiner').removeClass('pe-none');
+        } else {
+            if ($('#modalSpiner').length) $('#modalSpiner').modal('hide');
+            $('body').removeClass('pe-none');
+        }
     }
+
+    function btnLock($btn, on, texto) {
+        if (!$btn || !$btn.length) return;
+        if (on) {
+            $btn.data('txt', $btn.html());
+            $btn.prop('disabled', true);
+            if (texto) $btn.html(texto);
+        } else {
+            $btn.prop('disabled', false);
+            var old = $btn.data('txt');
+            if (old) $btn.html(old);
+        }
+    }
+
 
     // =============================================
     // GUARDAR (AJAX)
@@ -239,12 +316,10 @@
                 });
             },
             function() {
-                // Cancelado
                 alertify.error('Guardar compra cancelada');
             }
         );
     }
-
 
     // =============================================
     // TOTALES
@@ -365,9 +440,9 @@
     // =============================================
     $(document).ready(function() {
 
-        cargarProveedores();
-
-        // DataTable modal (SERVER-SIDE)
+        // ---------------------------------------------
+        // DataTable modal PRODUCTOS (SERVER-SIDE)
+        // ---------------------------------------------
         $('#TableListaProductos').dataTable({
             serverSide: true,
             processing: true,
@@ -376,6 +451,7 @@
                 type: 'POST',
                 data: function(d) {
                     d.excluded_ids = getProductosExcluidos();
+                    d.id_proveedor = $('#clienteId').val() || ''; // <- para último precio por proveedor
                 }
             },
             ordering: true,
@@ -398,6 +474,15 @@
                     data: 'nombre'
                 },
                 {
+                    data: 'ultimo_precio',
+                    className: 'text-end',
+                    render: function(data, type, row) {
+                        const p = parseFloat(data);
+                        if (!isNaN(p)) return formatCurrency(p);
+                        return '-';
+                    }
+                },
+                {
                     data: null,
                     orderable: false,
                     searchable: false,
@@ -406,12 +491,14 @@
                         const idp = row.id_producto || '';
                         const clave = row.clave || '';
                         const nombre = row.nombre || '';
+                        const ultimo = row.ultimo_precio || '';
                         return `
                             <button type="button"
                                 class="btn btn-sm btn-primary btn-agregar-producto"
                                 data-id="${idp}"
                                 data-clave="${escapeHtml(clave)}"
-                                data-nombre="${escapeHtml(nombre)}">
+                                data-nombre="${escapeHtml(nombre)}"
+                                data-precio="${ultimo}">
                                 Agregar
                             </button>
                         `;
@@ -456,13 +543,22 @@
             aplicarMaskPrecioVenta();
             actualizarMensajeTablaVacia();
 
-            // traer último precio
+            // setear precio desde la tabla (último precio mostrado)
             const proveedorId = $('#clienteId').val() || '';
-            obtenerUltimoPrecio(id_producto, proveedorId);
+            const precioUltimo = parseFloat($(this).data('precio'));
+
+            const $nuevaFilaElement = $('#tbodyProductos tr').last();
+            const $inputPrecio = $nuevaFilaElement.find('input.precio_venta');
+
+            if (!isNaN(precioUltimo)) {
+                $inputPrecio.val(precioUltimo.toFixed(2)).trigger('input');
+            } else {
+                // fallback si no vino precio (mantiene tu endpoint existente)
+                obtenerUltimoPrecio(id_producto, proveedorId);
+            }
 
             // total inicial
-            const nuevaFilaElement = $('#tbodyProductos tr').last();
-            calcularTotal(nuevaFilaElement);
+            calcularTotal($nuevaFilaElement);
 
             // refrescar lista para que ya no aparezca
             if (window.tablaProductosModal) window.tablaProductosModal.ajax.reload();
@@ -498,26 +594,86 @@
             );
         });
 
+        // ---------------------------------------------
+        // DataTable modal PROVEEDORES (SERVER-SIDE)
+        // ---------------------------------------------
+        $('#TableListaProveedores').dataTable({
+            serverSide: true,
+            processing: true,
+            ajax: {
+                url: 'ajax/compras/tabla-proveedores.php',
+                type: 'POST'
+            },
+            ordering: true,
+            pageLength: 10,
+            dom: "<'row'<'col-sm-6'l><'col-sm-6'p>>" +
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row'<'col-sm-6'l><'col-sm-6'p>>",
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json",
+                sSearch: '<i class="fa fa-search" aria-hidden="true"></i> Buscar'
+            },
+            responsive: true,
+            columns: [{
+                    data: 'nombre'
+                },
+                {
+                    data: 'razon_social'
+                },
+                {
+                    data: null,
+                    orderable: false,
+                    searchable: false,
+                    className: 'text-center',
+                    render: function(data, type, row) {
+                        const idp = row.id_proveedor || '';
+                        const nombre = row.nombre || '';
+                        const razon = row.razon_social || '';
+                        return `
+                            <button type="button"
+                                class="btn btn-sm btn-primary btn-select-proveedor"
+                                data-id="${idp}"
+                                data-nombre="${escapeHtml(nombre)}"
+                                data-razon="${escapeHtml(razon)}">
+                                Seleccionar
+                            </button>
+                        `;
+                    }
+                }
+            ]
+        });
+
+        window.tablaProveedoresModal = $('#TableListaProveedores').DataTable();
+
+        $('#searchProveedor').on('keyup', function() {
+            window.tablaProveedoresModal.search($(this).val()).draw();
+        });
+
+        // Seleccionar proveedor
+        $('#TableListaProveedores tbody').on('click', '.btn-select-proveedor', function() {
+            const id_proveedor = parseInt($(this).data('id'), 10) || 0;
+            const nombre = String($(this).data('nombre') || '');
+            const razon = String($(this).data('razon') || '');
+
+            if (id_proveedor <= 0) return;
+
+            const texto = (nombre && razon) ? (nombre + ' / ' + razon) : (nombre || razon);
+
+            $('#clienteId').val(id_proveedor);
+            $('#clienteInput').val(texto);
+
+            $('#clienteInput').removeClass('is-invalid').addClass('is-valid');
+            $('#errorCliente').hide();
+
+            FnCerrarModalProveedor();
+
+            // refrescar precios de productos ya agregados
+            refrescarPreciosPorProveedor();
+        });
+
         // Prevenir submit con Enter
         $('#formPedidos').on('keypress', function(e) {
             if (e.keyCode === 13) e.preventDefault();
-        });
-
-        // Proveedor datalist -> setear id + refrescar precios
-        $('#clienteInput').on('input', function() {
-            const nombre = $('#clienteInput').val().trim();
-            const id = proveedoresMap[nombre] || '';
-
-            if (id) {
-                $('#clienteId').val(id);
-                $('#clienteInput').removeClass('is-invalid').addClass('is-valid');
-                $('#errorCliente').hide();
-
-                refrescarPreciosPorProveedor();
-            } else {
-                $('#clienteId').val('');
-                $('#clienteInput').removeClass('is-valid').addClass('is-invalid');
-            }
         });
 
         function mostrarErrorCliente(mensaje) {
@@ -529,7 +685,7 @@
         $.validator.addMethod("clientExists", function(value, element) {
             const id = $('#clienteId').val();
             if (!id) {
-                mostrarErrorCliente("Proveedor no encontrado. Escriba un proveedor válido.");
+                mostrarErrorCliente("Selecciona un proveedor válido desde el ícono.");
                 return false;
             }
             return true;
@@ -570,41 +726,6 @@
         });
 
         actualizarMensajeTablaVacia();
-
-        // =============================================
-        // UI BLOCK (usa tu modal #modalSpiner)
-        // =============================================
-        function uiBlock(on) {
-            if (on) {
-                // Bootstrap modal (si existe)
-                if ($('#modalSpiner').length) {
-                    $('#modalSpiner').modal({
-                        backdrop: 'static',
-                        keyboard: false
-                    });
-                    $('#modalSpiner').modal('show');
-                }
-                // Bloqueo extra por si el modal no cubre todo
-                $('body').addClass('pe-none');
-                $('#modalSpiner').removeClass('pe-none'); // permite que el modal sí funcione
-            } else {
-                if ($('#modalSpiner').length) $('#modalSpiner').modal('hide');
-                $('body').removeClass('pe-none');
-            }
-        }
-
-        function btnLock($btn, on, texto) {
-            if (!$btn || !$btn.length) return;
-            if (on) {
-                $btn.data('txt', $btn.html());
-                $btn.prop('disabled', true);
-                if (texto) $btn.html(texto);
-            } else {
-                $btn.prop('disabled', false);
-                var old = $btn.data('txt');
-                if (old) $btn.html(old);
-            }
-        }
 
     });
 </script>

@@ -35,7 +35,26 @@ $con = "SELECT
 $rs = $clsConsulta->consultaGeneral($con);
 
 $granTotal = 0;
-echo '<table id="tablaDetalle" class="table table-bordered table-striped" data-total="0">
+$tbodyHtml = '';
+
+if ($clsConsulta->numrows > 0 && is_array($rs)) {
+  foreach ($rs as $val) {
+    $importe = (float)$val['cantidad'] * (float)$val['precio'];
+    $granTotal += $importe;
+
+    $tbodyHtml .= '<tr>';
+    $tbodyHtml .= '<td class="text-end">' . number_format((float)$val['cantidad'], 0, ".", ",") . '</td>';
+    $tbodyHtml .= '<td>' . htmlspecialchars($val['clave']) . '</td>';
+    $tbodyHtml .= '<td>' . htmlspecialchars($val['nombre']) . '</td>';
+    $tbodyHtml .= '<td class="text-end">$' . number_format((float)$val['precio'], 2, ".", ",") . '</td>';
+    $tbodyHtml .= '<td class="text-end">$' . number_format($importe, 2, ".", ",") . '</td>';
+    $tbodyHtml .= '</tr>';
+  }
+}
+
+$totalFmt = number_format($granTotal, 2, ".", ",");
+
+echo '<table id="tablaDetalle" class="table table-bordered table-striped" data-total="' . $totalFmt . '">
 <thead class="bg-info">
 <tr>
     <th class="text-center text-white">Cantidad</th>
@@ -47,33 +66,13 @@ echo '<table id="tablaDetalle" class="table table-bordered table-striped" data-t
 </thead>
 <tbody>';
 
-if ($clsConsulta->numrows > 0 && is_array($rs)) {
-  foreach ($rs as $val) {
-    $importe = (float)$val['cantidad'] * (float)$val['precio'];
-    $granTotal += $importe;
+echo $tbodyHtml;
 
-    echo '<tr>';
-    echo '<td class="text-end">' . number_format((float)$val['cantidad'], 0, ".", ",") . '</td>';
-    echo '<td>' . htmlspecialchars($val['clave']) . '</td>';
-    echo '<td>' . htmlspecialchars($val['nombre']) . '</td>';
-    echo '<td class="text-end">$' . number_format((float)$val['precio'], 2, ".", ",") . '</td>';
-    echo '<td class="text-end">$' . number_format($importe, 2, ".", ",") . '</td>';
-    echo '</tr>';
-  }
-}
-
-echo '</tbody>';
-echo '<tfoot>
-        <tr>
-            <th colspan="4" class="text-end">TOTAL</th>
-            <th class="text-end">$' . number_format($granTotal, 2, ".", ",") . '</th>
-        </tr>
-      </tfoot>';
-echo '</table>';
-
-echo '<script>
-  (function(){
-    var tbl = document.getElementById("tablaDetalle");
-    if (tbl) { tbl.setAttribute("data-total", "' . number_format($granTotal, 2, ".", ",") . '"); }
-  })();
-</script>';
+echo '</tbody>
+<tfoot>
+  <tr>
+    <th colspan="4" class="text-end">TOTAL</th>
+    <th class="text-end">$' . $totalFmt . '</th>
+  </tr>
+</tfoot>
+</table>';
